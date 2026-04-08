@@ -1,0 +1,17 @@
+# Dependencies & build
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# OS
+.DS_Store
+
+# Reference documents (not part of the app)
+*.rtf
+*.pdf
+*.numbers
+*.jpg
+Explore Our Data - Lancet Countdown.html
+Explore Our Data - Lancet Countdown_files/
