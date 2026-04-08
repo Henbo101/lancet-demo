@@ -68,7 +68,7 @@ export default function RootLayout({
                 <span className="material-symbols-outlined">dashboard</span>
                 <span className="font-label font-semibold text-sm">Dashboard</span>
               </button>
-              <button className="w-full flex items-center space-x-3 px-4 py-3 bg-teal-50 text-teal-900 rounded-xl font-bold border-r-4 border-teal-700 transition-all">
+              <button className="w-full flex items-center space-x-3 px-4 py-3 bg-teal-50 text-teal-900 rounded-xl font-bold border-l-4 border-teal-700 transition-all">
                 <span className="material-symbols-outlined">thermostat</span>
                 <span className="font-label text-sm text-left">Climate Impacts</span>
               </button>
@@ -98,7 +98,7 @@ export default function RootLayout({
           </aside>
 
           {/* ── Main content canvas ── */}
-          <main className="flex-1 lg:ml-72 mr-4 lg:mr-8 pb-20">
+          <main className="flex-1 px-4 sm:px-6 lg:pl-0 lg:pr-8 lg:ml-72 pb-20">
             {children}
           </main>
         </div>
