@@ -2,55 +2,42 @@
 
 import { useIndicatorStore, type ViewMode } from '@/store/useIndicatorStore';
 
-const VIEWS: { id: ViewMode; label: string }[] = [
-  { id: 'map', label: 'Map' },
-  { id: 'trend', label: 'Trend' },
-  { id: 'table', label: 'Table' },
+const VIEWS: { id: ViewMode; label: string; icon: string }[] = [
+  { id: 'trend', label: 'Trend', icon: 'show_chart' },
+  { id: 'map', label: 'Map', icon: 'public' },
+  { id: 'table', label: 'Table', icon: 'table_rows' },
 ];
 
 export default function ModuleHeader() {
-  const { activeView, setActiveView } = useIndicatorStore();
+  const { activeView, setActiveView, selectedRegion } = useIndicatorStore();
 
   return (
-    <div className="mb-8">
-      {/* Title row */}
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <h1 className="text-3xl font-oswald text-lancet-dark uppercase font-semibold leading-tight">
-          1.1.1 Exposure of Vulnerable Populations to Heatwaves
-        </h1>
-
-        {/* Format switcher pills */}
-        <div className="flex rounded-full overflow-hidden border border-lancet-gray-border shrink-0">
-          {VIEWS.map((v) => (
-            <button
-              key={v.id}
-              onClick={() => setActiveView(v.id)}
-              className={`px-4 py-1.5 text-sm transition-colors ${
-                activeView === v.id
-                  ? 'bg-lancet-dark-blue text-white'
-                  : 'bg-white text-lancet-dark hover:bg-gray-50'
-              }`}
-            >
-              {v.label}
-            </button>
-          ))}
-        </div>
+    <div className="flex justify-between items-start mb-6">
+      <div>
+        <h2 className="text-2xl font-headline font-bold text-teal-950 uppercase tracking-tight">
+          Heatwave Exposure Trend
+        </h2>
+        <p className="text-xs text-on-surface-variant font-label mt-1">
+          {selectedRegion.toUpperCase()} — PERSON-DAYS OF HEATWAVE EXPOSURE
+        </p>
       </div>
 
-      {/* Key finding callout */}
-      <div className="bg-lancet-teal-bg rounded-2xl p-6 mb-8 border-l-4 border-lancet-dark-blue">
-        <h2 className="font-oswald text-sm uppercase tracking-widest text-lancet-dark-blue font-semibold mb-2">
-          Key Finding
-        </h2>
-        <p className="text-[17px] leading-relaxed text-lancet-dark">
-          In 2024, people older than 65&nbsp;years and infants younger than
-          1&#8209;year experienced, on average,{' '}
-          <span className="font-semibold text-lancet-red">304%</span> and{' '}
-          <span className="font-semibold text-lancet-red">389%</span> more days
-          of heatwaves compared to the 1986&ndash;2005 baseline, underscoring
-          the accelerating health risks posed by rising temperatures to the most
-          vulnerable populations worldwide.
-        </p>
+      {/* Format switcher pills */}
+      <div className="flex space-x-1.5 shrink-0">
+        {VIEWS.map((v) => (
+          <button
+            key={v.id}
+            onClick={() => setActiveView(v.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold rounded-full border transition-colors ${
+              activeView === v.id
+                ? 'bg-primary text-white border-primary'
+                : 'bg-white text-on-surface-variant border-outline-variant/50 hover:bg-surface-container-low'
+            }`}
+          >
+            <span className="material-symbols-outlined text-sm">{v.icon}</span>
+            {v.label}
+          </button>
+        ))}
       </div>
     </div>
   );

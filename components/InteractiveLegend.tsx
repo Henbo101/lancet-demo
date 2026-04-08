@@ -21,7 +21,7 @@ export default function InteractiveLegend() {
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-all ${
               active
                 ? 'border-current shadow-sm'
-                : 'border-gray-200 opacity-50'
+                : 'border-outline-variant opacity-50'
             }`}
             style={{ color: active ? s.color : '#999' }}
           >
@@ -33,8 +33,8 @@ export default function InteractiveLegend() {
           </button>
         );
       })}
-      <span className="text-xs text-lancet-gray-600 ml-2">
-        Click to toggle series
+      <span className="text-[10px] text-on-surface-variant ml-2 tracking-wide uppercase">
+        Click to toggle
       </span>
     </div>
   );

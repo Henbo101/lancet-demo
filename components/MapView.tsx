@@ -11,7 +11,6 @@ import { dataset } from '@/lib/dataset';
 import { getSeriesKey } from '@/lib/data';
 import { getRegionForCountry } from '@/lib/countryRegions';
 
-/* ── colour ramp  (pale yellow → deep red, heatwave-appropriate) ── */
 const HEAT = [
   '#FFF7BC',
   '#FEE391',
@@ -21,8 +20,8 @@ const HEAT = [
   '#CC4C02',
   '#8C2D04',
 ];
-const BG = '#EDF2F7';
-const UNMATCHED = '#E2E8F0';
+const BG = '#eceef2';
+const UNMATCHED = '#e0e3e6';
 
 function pick(value: number, lo: number, hi: number): string {
   if (hi === lo) return HEAT[3];
@@ -32,7 +31,6 @@ function pick(value: number, lo: number, hi: number): string {
 
 const margin = { top: 10, right: 20, bottom: 50, left: 20 };
 
-/* ── features (computed once) ── */
 const countries = (
   topojson.feature(
     worldTopo as any,
@@ -40,7 +38,6 @@ const countries = (
   ) as any
 ).features as GeoJSON.Feature[];
 
-/* ──────────────────────────────────────────── */
 function MapInner({ width, height }: { width: number; height: number }) {
   const { selectedRegion, selectedDataType, yearRange } = useIndicatorStore();
 
@@ -48,7 +45,6 @@ function MapInner({ width, height }: { width: number; height: number }) {
   const innerW = width - margin.left - margin.right;
   const innerH = height - margin.top - margin.bottom;
 
-  /* value for each region at the selected year */
   const regionValues = useMemo(() => {
     const m = new Map<string, number>();
     const key = getSeriesKey(selectedDataType, '65plus');
@@ -68,7 +64,7 @@ function MapInner({ width, height }: { width: number; height: number }) {
   return (
     <div className="relative h-full">
       <svg width={width} height={height}>
-        <rect width={width} height={height} fill={BG} rx={8} />
+        <rect width={width} height={height} fill={BG} rx={16} />
 
         <Group left={margin.left} top={margin.top}>
           <Mercator<GeoJSON.Feature>
@@ -108,11 +104,11 @@ function MapInner({ width, height }: { width: number; height: number }) {
         </Group>
       </svg>
 
-      {/* ── colour legend ── */}
-      <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 border border-lancet-gray-border text-xs">
-        <div className="font-semibold text-lancet-dark mb-1">
+      {/* Colour legend */}
+      <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 border border-outline-variant/30 text-xs">
+        <div className="font-semibold text-on-surface mb-1">
           Adults &gt;65 exposure
-          <span className="font-normal text-lancet-gray-600 ml-1">
+          <span className="font-normal text-on-surface-variant ml-1">
             ({selectedDataType === 'average' ? 'days / person' : 'M person-days'})
           </span>
         </div>
@@ -125,23 +121,22 @@ function MapInner({ width, height }: { width: number; height: number }) {
             />
           ))}
         </div>
-        <div className="flex justify-between text-[10px] text-lancet-gray-600 mt-0.5 tabular-nums">
+        <div className="flex justify-between text-[10px] text-on-surface-variant mt-0.5 tabular-nums">
           <span>{lo.toFixed(1)}</span>
           <span>{hi.toFixed(1)}</span>
         </div>
       </div>
 
-      {/* ── year badge ── */}
-      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-lancet-gray-border">
-        <span className="text-xs text-lancet-gray-600">Year&nbsp;</span>
-        <span className="text-sm font-semibold text-lancet-dark tabular-nums">
+      {/* Year badge */}
+      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-1.5 border border-outline-variant/30">
+        <span className="text-[10px] text-on-surface-variant font-headline uppercase tracking-widest">Year </span>
+        <span className="text-sm font-bold text-teal-950 tabular-nums font-headline">
           {mapYear}
         </span>
       </div>
 
-      {/* ── SIDS note ── */}
       {selectedRegion === 'SIDS' && (
-        <div className="absolute top-3 left-3 bg-lancet-teal-bg rounded-lg px-3 py-1.5 text-xs text-lancet-dark">
+        <div className="absolute top-3 left-3 bg-primary-fixed rounded-xl px-3 py-1.5 text-xs text-on-surface">
           SIDS nations span multiple regions — showing all.
         </div>
       )}

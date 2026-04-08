@@ -27,9 +27,6 @@ interface TooltipData {
   '65plus': number;
 }
 
-/* ──────────────────────────────────────────────
-   Inner chart – receives exact pixel dimensions
-   ────────────────────────────────────────────── */
 function TrendChartInner({ width, height }: { width: number; height: number }) {
   const {
     selectedRegion,
@@ -41,7 +38,6 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
   const { showTooltip, hideTooltip, tooltipOpen, tooltipData, tooltipLeft } =
     useTooltip<TooltipData>();
 
-  /* ── Derived data ── */
   const filteredData = useMemo(
     () => filterData(dataset, selectedRegion, yearRange),
     [selectedRegion, yearRange]
@@ -60,7 +56,6 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
     [filteredData, elderlyKey]
   );
 
-  /* ── Scales ── */
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
@@ -79,7 +74,6 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
     [yMax, innerHeight]
   );
 
-  /* ── X-axis tick values (integer years, well-spaced) ── */
   const xTickValues = useMemo(() => {
     const range = yearRange[1] - yearRange[0];
     const step = range > 30 ? 5 : range > 15 ? 3 : range > 8 ? 2 : 1;
@@ -89,7 +83,6 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
     return ticks;
   }, [yearRange]);
 
-  /* ── Tooltip handler ── */
   const handleMouseMove = useCallback(
     (event: React.MouseEvent<SVGRectElement>) => {
       const point = localPoint(event);
@@ -113,7 +106,6 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
     [xScale, infantsSeries, elderlySeries, yearRange, showTooltip]
   );
 
-  /* ── Baseline reference window ── */
   const baselineStart = Math.max(1986, yearRange[0]);
   const baselineEnd = Math.min(2005, yearRange[1]);
   const showBaseline = baselineStart < baselineEnd;
@@ -127,17 +119,15 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
     <div className="relative">
       <svg width={width} height={height}>
         <Group left={margin.left} top={margin.top}>
-          {/* Grid rows */}
           <GridRows
             scale={yScale}
             width={innerWidth}
             numTicks={6}
-            stroke="#E0E0E0"
-            strokeOpacity={0.6}
+            stroke="#bfc7cf"
+            strokeOpacity={0.5}
             strokeDasharray="3,3"
           />
 
-          {/* Baseline band */}
           {showBaseline && (
             <>
               <rect
@@ -145,8 +135,8 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
                 y={0}
                 width={xScale(baselineEnd) - xScale(baselineStart)}
                 height={innerHeight}
-                fill="#E0E0E0"
-                fillOpacity={0.25}
+                fill="#bfc7cf"
+                fillOpacity={0.2}
                 rx={3}
               />
               <text
@@ -154,7 +144,7 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
                 y={16}
                 textAnchor="middle"
                 fontSize={11}
-                fill="#757575"
+                fill="#70787f"
                 fontFamily="'Open Sans', sans-serif"
               >
                 1986–2005 Baseline
@@ -162,7 +152,6 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
             </>
           )}
 
-          {/* Line: Adults >65 */}
           <LinePath
             data={elderlySeries}
             x={(d) => xScale(d.year)}
@@ -174,7 +163,6 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
             style={{ transition: 'stroke-opacity 300ms ease' }}
           />
 
-          {/* Line: Infants <1 */}
           <LinePath
             data={infantsSeries}
             x={(d) => xScale(d.year)}
@@ -186,7 +174,6 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
             style={{ transition: 'stroke-opacity 300ms ease' }}
           />
 
-          {/* Crosshair + data dots */}
           {tooltipOpen && tooltipData && (
             <>
               <line
@@ -194,7 +181,7 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
                 x2={xScale(tooltipData.year)}
                 y1={0}
                 y2={innerHeight}
-                stroke="#363636"
+                stroke="#191c1f"
                 strokeWidth={1}
                 strokeDasharray="4,4"
                 pointerEvents="none"
@@ -224,16 +211,15 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
             </>
           )}
 
-          {/* Axes */}
           <AxisBottom
             top={innerHeight}
             scale={xScale}
             tickValues={xTickValues}
             tickFormat={(v) => `${v}`}
-            stroke="#E0E0E0"
-            tickStroke="#E0E0E0"
+            stroke="#bfc7cf"
+            tickStroke="#bfc7cf"
             tickLabelProps={() => ({
-              fill: '#757575',
+              fill: '#40484e',
               fontSize: 12,
               fontFamily: "'Open Sans', sans-serif",
               textAnchor: 'middle' as const,
@@ -244,10 +230,10 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
           <AxisLeft
             scale={yScale}
             numTicks={6}
-            stroke="#E0E0E0"
-            tickStroke="#E0E0E0"
+            stroke="#bfc7cf"
+            tickStroke="#bfc7cf"
             tickLabelProps={() => ({
-              fill: '#757575',
+              fill: '#40484e',
               fontSize: 12,
               fontFamily: "'Open Sans', sans-serif",
               textAnchor: 'end' as const,
@@ -256,14 +242,13 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
             })}
           />
 
-          {/* Y-axis label */}
           <text
             x={-innerHeight / 2}
             y={-54}
             transform="rotate(-90)"
             textAnchor="middle"
             fontSize={12}
-            fill="#757575"
+            fill="#40484e"
             fontFamily="'Open Sans', sans-serif"
           >
             {selectedDataType === 'average'
@@ -271,7 +256,6 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
               : 'Total person-days (millions)'}
           </text>
 
-          {/* Invisible overlay for mouse interaction */}
           <rect
             x={0}
             y={0}
@@ -284,17 +268,16 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
         </Group>
       </svg>
 
-      {/* Floating tooltip card */}
       {tooltipOpen && tooltipData && (
         <div
-          className="absolute pointer-events-none bg-white/95 backdrop-blur-sm border border-lancet-gray-border rounded-lg shadow-lg px-3.5 py-2.5 text-sm"
+          className="absolute pointer-events-none bg-white/95 backdrop-blur-sm border border-outline-variant rounded-xl shadow-lg px-3.5 py-2.5 text-sm"
           style={{
             left: tooltipLeft,
             top: margin.top + 30,
             transform: 'translateX(-50%)',
           }}
         >
-          <div className="font-semibold text-lancet-dark mb-1.5 tabular-nums">
+          <div className="font-semibold text-on-surface mb-1.5 tabular-nums font-headline">
             {tooltipData.year}
           </div>
           {elderlyActive && (
@@ -303,7 +286,7 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
                 className="w-2.5 h-2.5 rounded-full shrink-0"
                 style={{ background: COLORS['65plus'] }}
               />
-              <span className="text-lancet-gray-600">Adults &gt;65:</span>
+              <span className="text-on-surface-variant">Adults &gt;65:</span>
               <span
                 className="font-semibold tabular-nums"
                 style={{ color: COLORS['65plus'] }}
@@ -320,7 +303,7 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
                 className="w-2.5 h-2.5 rounded-full shrink-0"
                 style={{ background: COLORS.infants }}
               />
-              <span className="text-lancet-gray-600">Infants &lt;1:</span>
+              <span className="text-on-surface-variant">Infants &lt;1:</span>
               <span
                 className="font-semibold tabular-nums"
                 style={{ color: COLORS.infants }}
@@ -337,9 +320,6 @@ function TrendChartInner({ width, height }: { width: number; height: number }) {
   );
 }
 
-/* ──────────────────────────────────────────────
-   Responsive wrapper
-   ────────────────────────────────────────────── */
 export default function TrendChart() {
   return (
     <ParentSize>

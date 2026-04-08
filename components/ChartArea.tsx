@@ -14,20 +14,20 @@ export default function ChartArea() {
       {activeView === 'trend' && (
         <>
           <InteractiveLegend />
-          <div className="w-full h-[500px] mb-8">
+          <div className="w-full h-[420px]">
             <TrendChart />
           </div>
         </>
       )}
 
       {activeView === 'map' && (
-        <div className="w-full h-[500px] mb-8">
+        <div className="w-full h-[420px]">
           <MapView />
         </div>
       )}
 
       {activeView === 'table' && (
-        <div className="mb-8">
+        <div>
           <TableView />
         </div>
       )}

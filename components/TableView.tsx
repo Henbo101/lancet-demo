@@ -72,25 +72,25 @@ export default function TableView() {
     sortKey === key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ' ↕';
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-lancet-gray-border">
+    <div className="overflow-x-auto rounded-2xl border border-outline-variant/30">
       <table className="w-full text-sm">
         <thead>
-          <tr className="bg-lancet-gray-100 border-b border-lancet-gray-border">
+          <tr className="bg-surface-container-low border-b border-outline-variant/30">
             {cols.map((c) => (
               <th
                 key={c.key}
                 onClick={() => toggle(c.key)}
-                className="px-4 py-3 text-left font-semibold text-lancet-dark cursor-pointer hover:bg-gray-200 transition-colors select-none"
+                className="px-4 py-3 text-left font-semibold text-on-surface cursor-pointer hover:bg-surface-container transition-colors select-none"
               >
                 <div className="flex flex-col">
-                  <span>
+                  <span className="text-xs uppercase tracking-wider font-headline">
                     {c.label}
-                    <span className="text-lancet-gray-600 font-normal">
+                    <span className="text-on-surface-variant font-normal">
                       {arrow(c.key)}
                     </span>
                   </span>
                   {c.unit && (
-                    <span className="text-[11px] font-normal text-lancet-gray-600">
+                    <span className="text-[10px] font-normal text-on-surface-variant">
                       {c.unit}
                     </span>
                   )}
@@ -104,8 +104,8 @@ export default function TableView() {
           {sorted.map((d, i) => (
             <tr
               key={d.year}
-              className={`border-b border-gray-100 hover:bg-lancet-teal-bg/30 transition-colors ${
-                i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+              className={`border-b border-outline-variant/10 hover:bg-primary-fixed/20 transition-colors ${
+                i % 2 === 0 ? 'bg-white' : 'bg-surface-container-lowest'
               }`}
             >
               {cols.map((c) => {
@@ -113,7 +113,7 @@ export default function TableView() {
                 return (
                   <td
                     key={c.key}
-                    className="px-4 py-2.5 tabular-nums text-lancet-dark"
+                    className="px-4 py-2.5 tabular-nums text-on-surface"
                   >
                     {typeof v === 'number'
                       ? v.toLocaleString(undefined, {
@@ -128,7 +128,7 @@ export default function TableView() {
         </tbody>
       </table>
 
-      <div className="px-4 py-2 text-xs text-lancet-gray-600 bg-lancet-gray-100 border-t border-lancet-gray-border">
+      <div className="px-4 py-2 text-[10px] text-on-surface-variant bg-surface-container-low border-t border-outline-variant/30 uppercase tracking-widest font-headline">
         {sorted.length} rows · {selectedRegion} ·{' '}
         {yearRange[0]}–{yearRange[1]}
       </div>
