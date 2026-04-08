@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-open-sans text-lancet-dark bg-white;
+  }
+}
+
+/* ── Dual-handle range slider ── */
+.range-thumb {
+  height: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.range-thumb::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 4px;
+}
+
+.range-thumb::-moz-range-track {
+  background: transparent;
+  height: 4px;
+}
+
+.range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: all;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0b6fa1;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  margin-top: -7px;
+}
+
+.range-thumb::-moz-range-thumb {
+  pointer-events: all;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0b6fa1;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
