@@ -41,26 +41,26 @@ export default function Home() {
         {/* Right column — headline + metric */}
         <div className="col-span-12 lg:col-span-4 flex flex-col space-y-6 xl:space-y-8">
           {/* Headline finding */}
-          <div className="flex-1 border-2 border-tertiary bg-surface-container-lowest rounded-[2.5rem] p-8 relative overflow-hidden">
+          <div className="flex-1 bg-primary text-white rounded-[2.5rem] p-8 relative overflow-hidden">
             <div className="relative z-10">
-              <h3 className="text-[10px] font-headline tracking-[0.2em] mb-6 text-tertiary uppercase">
+              <h3 className="text-[10px] font-headline tracking-[0.2em] mb-6 opacity-80 uppercase">
                 Key Finding
               </h3>
-              <p className="text-xl xl:text-2xl font-headline leading-tight italic text-on-surface">
+              <p className="text-xl xl:text-2xl font-headline leading-tight italic">
                 &ldquo;In 2024, people older than 65&nbsp;years and infants
                 younger than 1&#8209;year experienced, on average,{' '}
-                <span className="text-tertiary font-bold not-italic">
+                <span className="text-on-primary-container font-bold not-italic">
                   304%
                 </span>{' '}
                 and{' '}
-                <span className="text-tertiary font-bold not-italic">
+                <span className="text-on-primary-container font-bold not-italic">
                   389%
                 </span>{' '}
                 more days of heatwaves compared to the 1986–2005
                 baseline.&rdquo;
               </p>
             </div>
-            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-tertiary rounded-full opacity-5 blur-3xl" />
+            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-primary-container rounded-full opacity-30 blur-3xl" />
           </div>
 
           {/* Key metric */}
