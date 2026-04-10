@@ -26,6 +26,8 @@ interface Props {
   variant?: SectionVariant;
   /** Set false when a parent page heading already shows the indicator number (e.g. grouped 1.1.1). */
   showNumberBadge?: boolean;
+  /** Set false when a parent `SubsectionHead` already shows the same title as `meta.title`. */
+  showSectionTitle?: boolean;
 }
 
 function toCsv(data: Record<string, unknown>[]): string {
@@ -58,6 +60,7 @@ export default function IndicatorSection({
   mapView,
   variant = 'immersive',
   showNumberBadge = true,
+  showSectionTitle = true,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [activeView, setActiveView] = useState<ViewMode>('trend');
@@ -95,14 +98,20 @@ export default function IndicatorSection({
     <div className={`flex items-start mb-2 ${showNumberBadge ? 'gap-3' : ''}`}>
       {showNumberBadge ? badge : null}
       <div>
-        <h2
-          className={`text-2xl xl:text-3xl font-headline font-bold uppercase tracking-tight leading-tight ${
-            isDark ? 'text-white' : 'text-teal-950'
+        {showSectionTitle && (
+          <h2
+            className={`text-2xl xl:text-3xl font-headline font-bold uppercase tracking-tight leading-tight ${
+              isDark ? 'text-white' : 'text-teal-950'
+            }`}
+          >
+            {meta.title}
+          </h2>
+        )}
+        <p
+          className={`text-sm font-body ${showSectionTitle ? 'mt-1' : ''} ${
+            isDark ? 'text-white/60' : 'text-on-surface-variant'
           }`}
         >
-          {meta.title}
-        </h2>
-        <p className={`text-sm mt-1 font-body ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>
           {meta.subtitle}
         </p>
       </div>

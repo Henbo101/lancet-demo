@@ -8,6 +8,19 @@ import { globalData as data111attr } from '@/lib/data/indicator111attr';
 import { globalData as data111vuln } from '@/lib/data/indicator111vuln';
 import { globalData as data112 } from '@/lib/data/indicator112';
 
+function SubsectionHead({ number, title }: { number: string; title: string }) {
+  return (
+    <div className="mb-8 w-full max-w-none">
+      <div className="inline-block bg-primary/10 text-primary text-xs font-headline font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-3">
+        {number}
+      </div>
+      <h2 className="font-headline text-lg sm:text-xl font-bold text-teal-950 tracking-tight uppercase border-b border-outline-variant/40 pb-3">
+        {title}
+      </h2>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <>
@@ -33,11 +46,7 @@ export default function Home() {
       </section>
 
       {/* ── 1.1.1 Heatwaves — groups the two 1.1.1 chart blocks below ── */}
-      <div className="mb-8 w-full max-w-none">
-        <h2 className="font-headline text-lg sm:text-xl font-bold text-teal-950 tracking-tight uppercase border-b border-outline-variant/40 pb-3">
-          <span className="text-primary">1.1.1</span> Heatwaves
-        </h2>
-      </div>
+      <SubsectionHead number="1.1.1" title="Heatwaves" />
 
       {/* ── Attributable — full-width immersive opener ── */}
       <IndicatorSection
@@ -63,11 +72,14 @@ export default function Home() {
       </IndicatorSection>
 
       {/* ── 1.1.2 Physical Activity — sidebar right ── */}
+      <SubsectionHead number={indicators[2].number} title={indicators[2].title} />
       <IndicatorSection
         meta={indicators[2]}
         downloadData={[...data112] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.2-physical-activity.csv"
         variant="splitRight"
+        showNumberBadge={false}
+        showSectionTitle={false}
       >
         <Chart112 />
       </IndicatorSection>
