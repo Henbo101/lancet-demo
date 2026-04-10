@@ -155,7 +155,7 @@ export default function RootLayout({
           </aside>
 
           {/* ── Main content canvas ── */}
-          <main className="flex-1 px-4 sm:px-6 lg:pl-0 lg:pr-8 lg:ml-72 pb-20">
+          <main className="flex-1 min-w-0 w-full px-4 sm:px-6 lg:pl-0 lg:pr-8 lg:ml-72 pb-20">
             {children}
           </main>
         </div>

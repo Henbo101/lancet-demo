@@ -19,16 +19,16 @@ export default function Home() {
   return (
     <>
       {/* ── Hero section ── */}
-      <section id="hero" className="mt-8 mb-16 scroll-mt-24">
-        <div className="bg-surface-container-low rounded-[2.5rem] p-8 xl:p-12">
+      <section id="hero" className="mt-8 mb-16 scroll-mt-24 w-full max-w-none">
+        <div className="bg-surface-container-low rounded-[2.5rem] p-8 xl:p-12 w-full max-w-none">
           <div className="inline-block bg-primary/10 text-primary text-xs font-headline font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-8">
             Indicator 1.1
           </div>
 
-          <h1 className="font-headline font-bold text-primary uppercase leading-[0.9] mb-8">
-            <span className="text-6xl xl:text-8xl block">Heat &amp;</span>
-            <span className="text-6xl xl:text-8xl block text-primary/50">Human</span>
-            <span className="text-6xl xl:text-8xl block text-primary/50">Health</span>
+          <h1 className="w-full max-w-none font-headline font-bold text-primary uppercase leading-[0.9] mb-8">
+            <span className="text-6xl xl:text-8xl block w-full max-w-none">Heat &amp;</span>
+            <span className="text-6xl xl:text-8xl block w-full max-w-none text-primary/50">Human</span>
+            <span className="text-6xl xl:text-8xl block w-full max-w-none text-primary/50">Health</span>
           </h1>
 
           <p className="text-xl xl:text-2xl text-on-surface-variant font-body leading-relaxed max-w-2xl">
