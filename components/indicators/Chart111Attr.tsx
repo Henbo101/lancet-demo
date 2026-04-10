@@ -103,7 +103,7 @@ export default function Chart111Attr() {
   const { dark } = useChartTheme();
   const [selected, setSelected] = useState<string[]>(['Global']);
 
-  const { left: leftColorMap, right: rightColorMap } = useMemo(
+  const { left: leftColorMap } = useMemo(
     () => axisColorsForEntities(selected),
     [selected],
   );
@@ -147,7 +147,8 @@ export default function Chart111Attr() {
         }}
         right={{
           title: '% Attributable',
-          subtitle: 'Lines match entity colours; hover near a line or bar to focus one region.',
+          subtitle:
+            'Lines use the right-hand scale colour (rose); lighter–deeper rose when comparing several regions. Hover near a line or bar to focus.',
           color: DUAL_AXIS.rightRose,
         }}
       />
@@ -210,7 +211,6 @@ export default function Chart111Attr() {
                 allData={allData}
                 selected={selected}
                 leftColorMap={leftColorMap}
-                rightColorMap={rightColorMap}
                 years={years}
                 throughYear={playback.throughYear}
                 barWidth={barWidth}
@@ -236,7 +236,6 @@ interface ChartInnerProps {
   allData: Map<string, Row[]>;
   selected: string[];
   leftColorMap: Record<string, string>;
-  rightColorMap: Record<string, string>;
   years: number[];
   throughYear: number;
   barWidth: number;
@@ -255,7 +254,6 @@ function ChartInner({
   allData,
   selected,
   leftColorMap,
-  rightColorMap,
   years,
   throughYear,
   barWidth,
@@ -263,6 +261,21 @@ function ChartInner({
   dark,
 }: ChartInnerProps) {
   const gap = 2;
+
+  /** Right-axis % lines: match axis rose; spread lighter→deeper rose when several entities. */
+  const rightLineColors = useMemo(() => {
+    const n = selected.length;
+    const hi = DUAL_AXIS.rightRose;
+    const lo = '#fecdd3';
+    if (n <= 0) return {} as Record<string, string>;
+    if (n === 1) return { [selected[0]]: hi };
+    return Object.fromEntries(
+      selected.map((entity, i) => [
+        entity,
+        interpolateRgb(lo, hi)(i / (n - 1)),
+      ]),
+    );
+  }, [selected]);
 
   const hoverYears = useMemo(
     () => years.filter((y) => y <= throughYear),
@@ -292,7 +305,7 @@ function ChartInner({
         if (!d) return [];
         const pctVal = d.Observed > 0 ? (d.Attributable_to_CC / d.Observed) * 100 : 0;
         const lc = leftColorMap[entity];
-        const rc = rightColorMap[entity];
+        const rc = rightLineColors[entity] ?? DUAL_AXIS.rightRose;
         const prefix = entityCount > 1 ? `${entity}: ` : '';
         return [
           { color: lc, label: `${prefix}Observed`, value: fmt(d.Observed), group: entity },
@@ -318,7 +331,7 @@ function ChartInner({
         focusedSeriesKey: null,
       };
     },
-    [allData, selected, entityCount, leftColorMap, rightColorMap],
+    [allData, selected, entityCount, leftColorMap, rightLineColors],
   );
 
   const handleMouseMove = useCallback(
@@ -404,11 +417,11 @@ function ChartInner({
         {
           x: bandEntityCenterX(hoveredYear, idx, entityCount, xScale, barWidth, gap),
           y: yRightScale(pctVal),
-          color: rightColorMap[entity],
+          color: rightLineColors[entity] ?? DUAL_AXIS.rightRose,
         },
       ];
     });
-  }, [hoveredYear, fe, selected, allData, yRightScale, rightColorMap, entityCount, xScale, barWidth]);
+  }, [hoveredYear, fe, selected, allData, yRightScale, rightLineColors, entityCount, xScale, barWidth]);
 
   return (
     <>
@@ -470,7 +483,7 @@ function ChartInner({
                 year: d.Year,
                 pct: (d.Attributable_to_CC / d.Observed) * 100,
               }));
-            const lineColor = rightColorMap[entity];
+            const lineColor = rightLineColors[entity] ?? DUAL_AXIS.rightRose;
             return (
               <g key={`line-${entity}`}>
                 <LinePath
