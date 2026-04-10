@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Oswald, Open_Sans } from 'next/font/google';
 import './globals.css';
+import AppSidebar from '@/components/AppSidebar';
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -26,12 +27,6 @@ const topTabs = [
   { label: 'Mitigation Actions and Health Co-Benefits', active: false },
   { label: 'Economics and Finance', active: false },
   { label: 'Public and Political Engagement', active: false },
-];
-
-const sidebarSubItems = [
-  { label: '1.1.1 Heatwave Days (Attr.)', href: '#111attr' },
-  { label: '1.1.1 Heatwave Exposure (Vuln.)', href: '#111vuln' },
-  { label: '1.1.2 Heat & Physical Activity', href: '#112' },
 ];
 
 export default function RootLayout({
@@ -85,70 +80,7 @@ export default function RootLayout({
         </header>
 
         <div className="flex pt-20 min-h-screen">
-          {/* ── Sidebar ── */}
-          <aside className="hidden lg:flex fixed left-4 top-20 bottom-4 w-64 glass rounded-3xl shadow-2xl shadow-slate-200/50 flex-col p-4 z-40 overflow-y-auto">
-            <div className="px-4 pt-6 pb-4">
-              <div className="text-lg font-bold text-teal-950 font-headline tracking-tight">INDICATORS</div>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-[10px] tracking-widest text-slate-400 font-headline">2026 LIVE ARCHIVE</span>
-              </div>
-            </div>
-
-            <nav className="flex-1 space-y-1 px-1">
-              {/* 1.1 Heat & Health — active */}
-              <a
-                href="#hero"
-                className="w-full flex items-center space-x-3 px-4 py-3 bg-teal-50 text-teal-900 rounded-xl font-bold border-l-4 border-teal-700 transition-all"
-              >
-                <span className="material-symbols-outlined text-xl">thermostat</span>
-                <span className="font-headline text-xs uppercase tracking-wide text-left leading-tight">
-                  1.1 Health &amp; Heat
-                </span>
-              </a>
-
-              {/* Sub-indicators */}
-              <div className="pl-10 py-2 space-y-2.5">
-                {sidebarSubItems.map((item) => (
-                  <a
-                    key={item.href}
-                    className="block text-[11px] text-slate-500 hover:text-teal-700 transition-colors font-label leading-tight"
-                    href={item.href}
-                  >
-                    {item.label}
-                  </a>
-                ))}
-              </div>
-
-              {/* 1.2 — inactive */}
-              <button className="w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-100/50 rounded-xl transition-all">
-                <span className="material-symbols-outlined text-xl">thunderstorm</span>
-                <span className="font-headline text-xs uppercase tracking-wide text-left leading-tight">
-                  1.2 Health and Extreme Weather Events
-                </span>
-              </button>
-
-              {/* 1.3 — inactive */}
-              <button className="w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-100/50 rounded-xl transition-all">
-                <span className="material-symbols-outlined text-xl">coronavirus</span>
-                <span className="font-headline text-xs uppercase tracking-wide text-left leading-tight">
-                  1.3 Climate Suitability for Infectious Disease Transmission
-                </span>
-              </button>
-
-              {/* 1.4 — inactive */}
-              <button className="w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-100/50 rounded-xl transition-all">
-                <span className="material-symbols-outlined text-xl">nutrition</span>
-                <span className="font-headline text-xs uppercase tracking-wide text-left leading-tight">
-                  1.4 Food Security and Under Nutrition
-                </span>
-              </button>
-            </nav>
-
-            <button className="mt-auto bg-primary text-white py-4 rounded-2xl font-headline text-sm tracking-widest uppercase hover:bg-primary-container transition-colors">
-              Download Full Report
-            </button>
-          </aside>
+          <AppSidebar />
 
           {/* ── Main content canvas ── */}
           <main className="flex-1 min-w-0 w-full overflow-x-hidden px-4 sm:px-6 lg:pl-0 lg:pr-8 lg:ml-72 pb-20">
