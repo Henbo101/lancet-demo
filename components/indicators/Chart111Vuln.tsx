@@ -1,104 +1,117 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { ParentSize } from '@visx/responsive';
 import { Group } from '@visx/group';
-import { LinePath } from '@visx/shape';
-import { AxisBottom, AxisLeft } from '@visx/axis';
+import { LinePath, Bar } from '@visx/shape';
+import { AxisBottom, AxisLeft, AxisRight } from '@visx/axis';
 import { GridRows } from '@visx/grid';
 import { scaleLinear } from '@visx/scale';
 import { curveMonotoneX } from '@visx/curve';
 import { globalData, whoData, hdiData, lcData } from '@/lib/data/indicator111vuln';
+import EntityPicker, { buildColorMap, type EntityCategory } from '@/components/EntityPicker';
+import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
 
-const COLORS = ['#004e6f', '#B5334F'];
-const SERIES = [
-  { key: 'exposure_average_infants', label: 'Infants (<1 yr)', color: COLORS[0] },
-  { key: 'exposure_average_65', label: 'Over 65', color: COLORS[1] },
-];
-const margin = { top: 20, right: 30, bottom: 40, left: 85 };
+const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 const fmt = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
+const fmtB = (v: number) => (v / 1e9).toFixed(1) + 'B';
+
+const SERIES_DEFS = [
+  { avgKey: 'exposure_average_infants', totalKey: 'exposure_total_infants', label: 'Infants (<1 yr)' },
+  { avgKey: 'exposure_average_65', totalKey: 'exposure_total_65', label: 'Over 65' },
+  { avgKey: 'exposure_average_75', totalKey: 'exposure_total_75', label: 'Over 75' },
+] as const;
+
+const whoRegions: string[] = [...new Set(whoData.map((d) => d['WHO region'] as string))].sort();
+const hdiLevels: string[] = [...new Set(hdiData.map((d) => d['HDI level'] as string))].sort();
+const lcRegions: string[] = [...new Set(lcData.map((d) => d['Lancet Countdown Region'] as string))].sort();
+
+const entityCategories: EntityCategory[] = [
+  { category: 'WHO Regions', items: whoRegions },
+  { category: 'HDI Levels', items: hdiLevels },
+  { category: 'LC Regions', items: lcRegions },
+];
+
+interface Row {
+  Year: number;
+  [key: string]: number;
+}
+
+function getDataForEntity(entity: string): Row[] {
+  const pick = (src: readonly Record<string, unknown>[]): Row[] =>
+    src.map((d) => {
+      const row: Row = { Year: d.Year as number };
+      for (const s of SERIES_DEFS) {
+        row[s.avgKey] = (d[s.avgKey] as number) ?? 0;
+        row[s.totalKey] = (d[s.totalKey] as number) ?? 0;
+      }
+      return row;
+    });
+
+  if (entity === 'Global') return pick(globalData as unknown as Record<string, unknown>[]);
+  if (whoRegions.includes(entity))
+    return pick(whoData.filter((d) => d['WHO region'] === entity) as unknown as Record<string, unknown>[]);
+  if (hdiLevels.includes(entity))
+    return pick(hdiData.filter((d) => d['HDI level'] === entity) as unknown as Record<string, unknown>[]);
+  if (lcRegions.includes(entity))
+    return pick(lcData.filter((d) => d['Lancet Countdown Region'] === entity) as unknown as Record<string, unknown>[]);
+  return pick(globalData as unknown as Record<string, unknown>[]);
+}
 
 export default function Chart111Vuln() {
-  const [selected, setSelected] = useState('global');
-  const [active, setActive] = useState<string[]>(SERIES.map((s) => s.key));
+  const [selected, setSelected] = useState<string[]>(['Global']);
+  const [activeSeries, setActiveSeries] = useState<string[]>([
+    SERIES_DEFS[0].avgKey,
+    SERIES_DEFS[1].avgKey,
+  ]);
+  const colorMap = useMemo(() => buildColorMap(selected), [selected]);
 
-  const whoRegions = useMemo(() => [...new Set(whoData.map((d) => d['WHO region']))], []);
-  const hdiLevels = useMemo(() => [...new Set(hdiData.map((d) => d['HDI level']))], []);
-  const lcRegions = useMemo(() => [...new Set(lcData.map((d) => d['Lancet Countdown Region']))], []);
-
-  const data = useMemo(() => {
-    const pick = (src: readonly Record<string, unknown>[]) =>
-      src.map((d) => ({
-        Year: d.Year as number,
-        exposure_average_infants: d.exposure_average_infants as number,
-        exposure_average_65: d.exposure_average_65 as number,
-      }));
-
-    if (selected === 'global') return pick(globalData as unknown as Record<string, unknown>[]);
-    const [type, value] = selected.split(':');
-    if (type === 'who')
-      return pick(whoData.filter((d) => d['WHO region'] === value) as unknown as Record<string, unknown>[]);
-    if (type === 'hdi')
-      return pick(hdiData.filter((d) => d['HDI level'] === value) as unknown as Record<string, unknown>[]);
-    if (type === 'lc')
-      return pick(lcData.filter((d) => d['Lancet Countdown Region'] === value) as unknown as Record<string, unknown>[]);
-    return pick(globalData as unknown as Record<string, unknown>[]);
+  const allData = useMemo(() => {
+    const map = new Map<string, Row[]>();
+    for (const entity of selected) map.set(entity, getDataForEntity(entity));
+    return map;
   }, [selected]);
 
-  const toggle = (key: string) =>
-    setActive((prev) =>
+  const years = useMemo(
+    () => [...new Set([...allData.values()].flatMap((d) => d.map((r) => r.Year)))].sort(),
+    [allData],
+  );
+
+  const toggleSeries = (key: string) =>
+    setActiveSeries((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     );
 
+  const seriesColors: Record<string, string> = {
+    [SERIES_DEFS[0].avgKey]: '#004e6f',
+    [SERIES_DEFS[1].avgKey]: '#B5334F',
+    [SERIES_DEFS[2].avgKey]: '#E67E22',
+  };
+
   return (
     <>
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-4 mb-4 border-b border-outline-variant/30">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-headline text-on-surface-variant uppercase tracking-widest">
-            Region
-          </span>
-          <select
-            value={selected}
-            onChange={(e) => setSelected(e.target.value)}
-            className="px-3 py-1.5 text-sm border border-outline-variant rounded-lg bg-white text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/40"
-          >
-            <option value="global">Global</option>
-            <optgroup label="WHO Region">
-              {whoRegions.map((r) => (
-                <option key={r} value={`who:${r}`}>{r}</option>
-              ))}
-            </optgroup>
-            <optgroup label="HDI Level">
-              {hdiLevels.map((l) => (
-                <option key={l} value={`hdi:${l}`}>{l}</option>
-              ))}
-            </optgroup>
-            <optgroup label="Lancet Countdown Region">
-              {lcRegions.map((r) => (
-                <option key={r} value={`lc:${r}`}>{r}</option>
-              ))}
-            </optgroup>
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {SERIES.map((s) => {
-            const on = active.includes(s.key);
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        <EntityPicker
+          categories={entityCategories}
+          selected={selected}
+          onChange={setSelected}
+        />
+        <div className="flex items-center gap-2 ml-auto">
+          {SERIES_DEFS.map((s) => {
+            const on = activeSeries.includes(s.avgKey);
+            const c = seriesColors[s.avgKey];
             return (
               <button
-                key={s.key}
-                onClick={() => toggle(s.key)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-all"
+                key={s.avgKey}
+                onClick={() => toggleSeries(s.avgKey)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-bold transition-all"
                 style={
                   on
-                    ? { borderColor: s.color, color: s.color, backgroundColor: `${s.color}18` }
-                    : { borderColor: '#bfc7cf50', color: '#40484e' }
+                    ? { borderColor: c, color: c, backgroundColor: `${c}15` }
+                    : { borderColor: '#bfc7cf50', color: '#94a3b8' }
                 }
               >
-                <span
-                  className="inline-block w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: on ? s.color : '#bfc7cf' }}
-                />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: on ? c : '#bfc7cf' }} />
                 {s.label}
               </button>
             );
@@ -106,86 +119,272 @@ export default function Chart111Vuln() {
         </div>
       </div>
 
-      <div className="h-[380px]">
+      <div className="h-[420px] relative">
         <ParentSize>
           {({ width, height }) => {
             if (width < 10 || height < 10) return null;
-            const xMax = width - margin.left - margin.right;
-            const yMax = height - margin.top - margin.bottom;
+            const innerW = width - margin.left - margin.right;
+            const innerH = height - margin.top - margin.bottom;
 
             const xScale = scaleLinear<number>({
-              domain: [
-                Math.min(...data.map((d) => d.Year)),
-                Math.max(...data.map((d) => d.Year)),
-              ],
-              range: [0, xMax],
+              domain: [Math.min(...years), Math.max(...years)],
+              range: [0, innerW],
             });
 
-            const allVals = data.flatMap((d) =>
-              active.map((k) => (d as unknown as Record<string, number>)[k] ?? 0),
+            const allAvgVals = [...allData.values()].flatMap((rows) =>
+              rows.flatMap((d) => activeSeries.map((k) => d[k] ?? 0)),
             );
             const yScale = scaleLinear<number>({
-              domain: [0, Math.max(1, ...allVals) * 1.1],
-              range: [yMax, 0],
+              domain: [0, Math.max(1, ...allAvgVals) * 1.15],
+              range: [innerH, 0],
               nice: true,
             });
 
+            const activeTotalKeys = activeSeries.map((k) => k.replace('average', 'total'));
+            const allTotalVals = [...allData.values()].flatMap((rows) =>
+              rows.flatMap((d) => activeTotalKeys.map((k) => d[k] ?? 0)),
+            );
+            const yRightScale = scaleLinear<number>({
+              domain: [0, Math.max(1, ...allTotalVals) * 1.15],
+              range: [innerH, 0],
+              nice: true,
+            });
+
+            const buildTooltip = (year: number): TooltipPayload => {
+              const rows = selected.flatMap((entity) => {
+                const d = allData.get(entity)?.find((r) => r.Year === year);
+                if (!d) return [];
+                const prefix = selected.length > 1 ? `${entity}: ` : '';
+                return activeSeries.map((k) => {
+                  const def = SERIES_DEFS.find((s) => s.avgKey === k)!;
+                  const totalK = k.replace('average', 'total');
+                  return {
+                    color: seriesColors[k],
+                    label: `${prefix}${def.label}`,
+                    value: `${fmt(d[k])} avg / ${fmtB(d[totalK])} total`,
+                  };
+                });
+              });
+              return { year, rows };
+            };
+
             return (
-              <svg width={width} height={height}>
-                <Group left={margin.left} top={margin.top}>
-                  <GridRows scale={yScale} width={xMax} stroke="#bfc7cf" strokeOpacity={0.3} />
-                  {SERIES.filter((s) => active.includes(s.key)).map((s) => (
-                    <LinePath
-                      key={s.key}
-                      data={data}
-                      x={(d) => xScale(d.Year) ?? 0}
-                      y={(d) => yScale((d as unknown as Record<string, number>)[s.key] ?? 0) ?? 0}
-                      stroke={s.color}
-                      strokeWidth={2}
-                      curve={curveMonotoneX}
-                    />
-                  ))}
-                  <AxisBottom
-                    top={yMax}
-                    scale={xScale}
-                    stroke="#bfc7cf"
-                    tickStroke="#bfc7cf"
-                    numTicks={8}
-                    tickLabelProps={() => ({
-                      fill: '#40484e',
-                      fontSize: 11,
-                      fontFamily: "'Open Sans', sans-serif",
-                      textAnchor: 'middle' as const,
-                    })}
-                    tickFormat={(v) => String(Math.round(v as number))}
-                  />
-                  <AxisLeft
-                    scale={yScale}
-                    stroke="#bfc7cf"
-                    tickStroke="#bfc7cf"
-                    tickLabelProps={() => ({
-                      fill: '#40484e',
-                      fontSize: 11,
-                      fontFamily: "'Open Sans', sans-serif",
-                      textAnchor: 'end' as const,
-                      dy: '0.33em',
-                      dx: -4,
-                    })}
-                    tickFormat={(v) => fmt(v as number)}
-                    label="Avg exposure days per person"
-                    labelProps={{
-                      fill: '#40484e',
-                      fontSize: 12,
-                      fontFamily: "'Open Sans', sans-serif",
-                      textAnchor: 'middle',
-                    }}
-                  />
-                </Group>
-              </svg>
+              <ChartInner
+                width={width}
+                height={height}
+                innerW={innerW}
+                innerH={innerH}
+                xScale={xScale}
+                yScale={yScale}
+                yRightScale={yRightScale}
+                allData={allData}
+                selected={selected}
+                activeSeries={activeSeries}
+                seriesColors={seriesColors}
+                years={years}
+                buildTooltip={buildTooltip}
+              />
             );
           }}
         </ParentSize>
       </div>
+    </>
+  );
+}
+
+interface InnerProps {
+  width: number;
+  height: number;
+  innerW: number;
+  innerH: number;
+  xScale: ReturnType<typeof scaleLinear<number>>;
+  yScale: ReturnType<typeof scaleLinear<number>>;
+  yRightScale: ReturnType<typeof scaleLinear<number>>;
+  allData: Map<string, Row[]>;
+  selected: string[];
+  activeSeries: string[];
+  seriesColors: Record<string, string>;
+  years: number[];
+  buildTooltip: (year: number) => TooltipPayload;
+}
+
+function ChartInner({
+  width,
+  height,
+  innerW,
+  innerH,
+  xScale,
+  yScale,
+  yRightScale,
+  allData,
+  selected,
+  activeSeries,
+  seriesColors,
+  years,
+  buildTooltip,
+}: InnerProps) {
+  const stableBuild = useCallback(buildTooltip, [buildTooltip]);
+  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
+    useChartHover({ xScale, years, margin, buildTooltip: stableBuild });
+
+  const dotPositions = useMemo(() => {
+    if (hoveredYear == null) return [];
+    return selected.flatMap((entity) => {
+      const d = allData.get(entity)?.find((r) => r.Year === hoveredYear);
+      if (!d) return [];
+      return activeSeries.map((k) => ({
+        x: getXForYear(hoveredYear),
+        y: yScale(d[k] ?? 0),
+        color: seriesColors[k],
+      }));
+    });
+  }, [hoveredYear, selected, allData, getXForYear, yScale, activeSeries, seriesColors]);
+
+  const baselineX1 = xScale(1986);
+  const baselineX2 = xScale(2005);
+
+  return (
+    <>
+      <svg width={width} height={height}>
+        <Group left={margin.left} top={margin.top}>
+          <GridRows scale={yScale} width={innerW} stroke="#bfc7cf" strokeOpacity={0.3} />
+
+          {/* Baseline band 1986-2005 */}
+          {baselineX1 != null && baselineX2 != null && (
+            <rect
+              x={baselineX1}
+              y={0}
+              width={baselineX2 - baselineX1}
+              height={innerH}
+              fill="#004e6f"
+              fillOpacity={0.04}
+            />
+          )}
+          {baselineX1 != null && (
+            <text x={baselineX1 + 4} y={14} fontSize={9} fill="#004e6f" opacity={0.5} fontFamily="'Open Sans', sans-serif">
+              Baseline 1986–2005
+            </text>
+          )}
+
+          {/* Total person-days bars (right axis) — show for primary entity */}
+          {(() => {
+            const entity = selected[0];
+            const rows = allData.get(entity) ?? [];
+            const activeTotalKeys = activeSeries.map((k) => k.replace('average', 'total'));
+            const barWidth = Math.max(innerW / rows.length - 2, 1);
+            return rows.map((d) => {
+              const totalSum = activeTotalKeys.reduce((sum, k) => sum + (d[k] ?? 0), 0);
+              const barH = innerH - (yRightScale(totalSum) ?? 0);
+              return (
+                <Bar
+                  key={d.Year}
+                  x={(xScale(d.Year) ?? 0) - barWidth / 2}
+                  y={yRightScale(totalSum) ?? 0}
+                  width={barWidth}
+                  height={barH}
+                  fill="#004e6f"
+                  fillOpacity={0.06}
+                  rx={1}
+                />
+              );
+            });
+          })()}
+
+          {/* Lines per entity per active series */}
+          {selected.map((entity) => {
+            const rows = allData.get(entity) ?? [];
+            return activeSeries.map((k) => (
+              <LinePath
+                key={`${entity}-${k}`}
+                data={rows}
+                x={(d) => xScale(d.Year) ?? 0}
+                y={(d) => yScale(d[k] ?? 0) ?? 0}
+                stroke={seriesColors[k]}
+                strokeWidth={2}
+                strokeOpacity={selected.length > 1 && entity !== selected[0] ? 0.5 : 1}
+                curve={curveMonotoneX}
+              />
+            ));
+          })}
+
+          {/* 2024 endpoint annotations for primary entity */}
+          {(() => {
+            const rows = allData.get(selected[0]) ?? [];
+            const last = rows.find((d) => d.Year === 2024);
+            if (!last) return null;
+            const baselineRows = rows.filter((d) => d.Year >= 1986 && d.Year <= 2005);
+            return activeSeries.map((k, i) => {
+              if (baselineRows.length === 0) return null;
+              const baselineAvg = baselineRows.reduce((s, d) => s + (d[k] ?? 0), 0) / baselineRows.length;
+              if (baselineAvg === 0) return null;
+              const changePct = Math.round(((last[k] - baselineAvg) / baselineAvg) * 100);
+              const def = SERIES_DEFS.find((s) => s.avgKey === k)!;
+              return (
+                <text
+                  key={k}
+                  x={xScale(2024)! + 8}
+                  y={(yScale(last[k]) ?? 0) + (i * 16)}
+                  fontSize={10}
+                  fontWeight={700}
+                  fill={seriesColors[k]}
+                  fontFamily="'Open Sans', sans-serif"
+                >
+                  {def.label}: +{changePct}%
+                </text>
+              );
+            });
+          })()}
+
+          <AxisBottom
+            top={innerH}
+            scale={xScale}
+            stroke="#bfc7cf"
+            tickStroke="#bfc7cf"
+            numTicks={8}
+            tickLabelProps={() => ({
+              fill: '#40484e', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle' as const,
+            })}
+            tickFormat={(v) => String(Math.round(v as number))}
+          />
+          <AxisLeft
+            scale={yScale}
+            stroke="#bfc7cf"
+            tickStroke="#bfc7cf"
+            labelOffset={65}
+            tickLabelProps={() => ({
+              fill: '#40484e', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'end' as const, dy: '0.33em', dx: -4,
+            })}
+            tickFormat={(v) => fmt(v as number)}
+            label="Avg days per person"
+            labelProps={{ fill: '#004e6f', fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }}
+          />
+          <AxisRight
+            left={innerW}
+            scale={yRightScale}
+            stroke="#bfc7cf"
+            tickStroke="#bfc7cf"
+            labelOffset={50}
+            tickLabelProps={() => ({
+              fill: '#94a3b8', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'start' as const, dy: '0.33em', dx: 4,
+            })}
+            tickFormat={(v) => fmtB(v as number)}
+            label="Total person-days"
+            labelProps={{ fill: '#94a3b8', fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }}
+          />
+        </Group>
+
+        <Crosshair
+          hoveredYear={hoveredYear}
+          getXForYear={getXForYear}
+          innerHeight={innerH}
+          innerWidth={innerW}
+          margin={margin}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          dotPositions={dotPositions}
+        />
+      </svg>
+      <TooltipCard tooltipOpen={tooltipOpen} tooltipData={tooltipData} tooltipLeft={tooltipLeft} tooltipTop={tooltipTop} />
     </>
   );
 }

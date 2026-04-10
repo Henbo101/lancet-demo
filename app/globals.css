@@ -8,6 +8,16 @@
   }
 }
 
+/* ── Dark section chart overrides ── */
+.bg-teal-900 text,
+.bg-teal-900 .visx-axis-tick text {
+  fill: rgba(255, 255, 255, 0.7);
+}
+.bg-teal-900 .visx-grid line,
+.bg-teal-900 .visx-axis-line line {
+  stroke: rgba(255, 255, 255, 0.15);
+}
+
 /* ── Glass morphism ── */
 .glass {
   background: rgba(255, 255, 255, 0.7);

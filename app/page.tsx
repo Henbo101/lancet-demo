@@ -39,59 +39,72 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Indicator sections ── */}
+      {/* ── 1.1.1 Attributable — full-width immersive opener ── */}
       <IndicatorSection
         meta={indicators[0]}
         downloadData={[...data111attr] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.1-attributable.csv"
+        variant="immersive"
       >
         <Chart111Attr />
       </IndicatorSection>
 
+      {/* ── 1.1.1 Vulnerable — sidebar left ── */}
       <IndicatorSection
         meta={indicators[1]}
         downloadData={[...data111vuln] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.1-vulnerable.csv"
+        variant="splitLeft"
       >
         <Chart111Vuln />
       </IndicatorSection>
 
+      {/* ── 1.1.2 Physical Activity — sidebar right ── */}
       <IndicatorSection
         meta={indicators[2]}
         downloadData={[...data112] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.2-physical-activity.csv"
+        variant="splitRight"
       >
         <Chart112 />
       </IndicatorSection>
 
+      {/* ── 1.1.3 Labour Capacity — dark contrast section ── */}
       <IndicatorSection
         meta={indicators[3]}
         downloadData={[...data113pwhl] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.3-labour-capacity.csv"
+        variant="dark"
       >
         <Chart113Pwhl />
       </IndicatorSection>
 
+      {/* ── 1.1.3 Outdoor Workers — compact dashboard ── */}
       <IndicatorSection
         meta={indicators[4]}
         downloadData={[...data113workers] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.3-outdoor-workers.csv"
+        variant="dashboard"
       >
         <Chart113Workers />
       </IndicatorSection>
 
+      {/* ── 1.1.4 Sleep Loss — big number focus ── */}
       <IndicatorSection
         meta={indicators[5]}
         downloadData={[...data114] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.4-sleep-loss.csv"
+        variant="bignum"
       >
         <Chart114 />
       </IndicatorSection>
 
+      {/* ── 1.1.5 Heat Mortality — conclusion wrap ── */}
       <IndicatorSection
         meta={indicators[6]}
         downloadData={[...data115] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.5-heat-mortality.csv"
+        variant="conclusion"
       >
         <Chart115 />
       </IndicatorSection>
