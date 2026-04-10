@@ -22,6 +22,11 @@ const SECTORS: { raw: string; label: string; color: string }[] = [
 const ALL_KEYS = SECTORS.map((s) => s.label);
 const sectorColorMap: Record<string, string> = Object.fromEntries(SECTORS.map((s) => [s.label, s.color]));
 
+/** Per-worker (right axis) — light amber reads clearly on the emerald strip; avoid dark teal (#004e6f) */
+const PER_WORKER_STROKE = '#facc15';
+const PER_WORKER_REF_BAND = 'rgba(250, 204, 21, 0.1)';
+const PER_WORKER_REF_LINE = 'rgba(250, 204, 21, 0.45)';
+
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 const fmtB = (v: number) => (v / 1e9).toFixed(2) + 'B';
 const fmt = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -138,7 +143,7 @@ export default function Chart113PWHL() {
                 label: s.label,
                 value: fmt(d[s.label]) + 'M hrs',
               }));
-              rows.push({ color: '#004e6f', label: 'Per-worker', value: fmt(d.TotalSunWHLpp) + ' hrs' });
+              rows.push({ color: PER_WORKER_STROKE, label: 'Per-worker', value: fmt(d.TotalSunWHLpp) + ' hrs' });
               return { year, rows, supplementary: [{ label: 'Total (ag+con)', value: d.TotalSunAgCon.toFixed(2) + 'B' }] };
             };
 
@@ -162,6 +167,7 @@ interface InnerProps {
 }
 
 function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale, data, activeKeys, baselinePP, years, buildTooltip, dark }: InnerProps) {
+  const axisTickFill = dark ? 'rgba(255,255,255,0.72)' : '#40484e';
   const stableBuild = useCallback(buildTooltip, [buildTooltip]);
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
     useChartHover({ xScale, years, margin, buildTooltip: stableBuild });
@@ -170,7 +176,7 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
     if (hoveredYear == null) return [];
     const d = data.find((r) => r.Year === hoveredYear);
     if (!d) return [];
-    return [{ x: getXForYear(hoveredYear), y: yRightScale(d.TotalSunWHLpp), color: '#004e6f' }];
+    return [{ x: getXForYear(hoveredYear), y: yRightScale(d.TotalSunWHLpp), color: PER_WORKER_STROKE }];
   }, [hoveredYear, data, getXForYear, yRightScale]);
 
   return (
@@ -180,8 +186,8 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
           <GridRows scale={yScale} width={innerW} stroke="#bfc7cf" strokeOpacity={0.3} />
 
           {/* 1990-99 baseline */}
-          <rect x={xScale(1990)} y={0} width={xScale(1999) - xScale(1990)} height={innerH} fill="#004e6f" fillOpacity={0.04} />
-          <text x={xScale(1990) + 4} y={14} fontSize={9} fill="#004e6f" opacity={0.5} fontFamily="'Open Sans', sans-serif">1990–99 Ref</text>
+          <rect x={xScale(1990)} y={0} width={xScale(1999) - xScale(1990)} height={innerH} fill={PER_WORKER_REF_BAND} />
+          <text x={xScale(1990) + 4} y={14} fontSize={9} fill={PER_WORKER_STROKE} opacity={0.55} fontFamily="'Open Sans', sans-serif">1990–99 Ref</text>
 
           <AreaStack<StackDatum, string>
             keys={activeKeys}
@@ -201,29 +207,29 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
             data={data}
             x={(d) => xScale(d.Year) ?? 0}
             y={(d) => yRightScale(d.TotalSunWHLpp) ?? 0}
-            stroke="#004e6f"
+            stroke={PER_WORKER_STROKE}
             strokeWidth={2.5}
             curve={curveMonotoneX}
           />
 
           {/* Baseline per-worker ref line */}
           {baselinePP != null && (
-            <line x1={0} x2={innerW} y1={yRightScale(baselinePP)} y2={yRightScale(baselinePP)} stroke="#004e6f" strokeWidth={1} strokeDasharray="4,4" opacity={0.3} />
+            <line x1={0} x2={innerW} y1={yRightScale(baselinePP)} y2={yRightScale(baselinePP)} stroke={PER_WORKER_REF_LINE} strokeWidth={1} strokeDasharray="4,4" />
           )}
 
           <AxisBottom top={innerH} scale={xScale} stroke="#bfc7cf" tickStroke="#bfc7cf" numTicks={8}
-            tickLabelProps={() => ({ fill: '#40484e', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle' as const })}
+            tickLabelProps={() => ({ fill: axisTickFill, fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle' as const })}
             tickFormat={(v) => String(Math.round(v as number))} />
           <AxisLeft scale={yScale} stroke="#bfc7cf" tickStroke="#bfc7cf" labelOffset={65}
-            tickLabelProps={() => ({ fill: '#40484e', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'end' as const, dy: '0.33em', dx: -4 })}
+            tickLabelProps={() => ({ fill: axisTickFill, fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'end' as const, dy: '0.33em', dx: -4 })}
             tickFormat={(v) => fmt(v as number)}
             label="Millions of hours lost"
-            labelProps={{ fill: '#004e6f', fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
+            labelProps={{ fill: axisTickFill, fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
           <AxisRight left={innerW} scale={yRightScale} stroke="#bfc7cf" tickStroke="#bfc7cf" labelOffset={50}
-            tickLabelProps={() => ({ fill: '#004e6f', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'start' as const, dy: '0.33em', dx: 4 })}
+            tickLabelProps={() => ({ fill: PER_WORKER_STROKE, fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'start' as const, dy: '0.33em', dx: 4 })}
             tickFormat={(v) => fmt(v as number)}
             label="Hours per worker"
-            labelProps={{ fill: '#004e6f', fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
+            labelProps={{ fill: PER_WORKER_STROKE, fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
         </Group>
         <Crosshair hoveredYear={hoveredYear} getXForYear={getXForYear} innerHeight={innerH} innerWidth={innerW} margin={margin} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} dotPositions={dotPositions} />
       </svg>

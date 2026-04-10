@@ -208,7 +208,7 @@ export function TooltipCard({
       applyPositionStyle
       className={`pointer-events-none z-50 px-4 py-3 rounded-xl shadow-lg border text-sm ${
         dark
-          ? 'bg-teal-900/95 backdrop-blur-md border-teal-700/50 text-white'
+          ? 'bg-emerald-950/95 backdrop-blur-md border-emerald-700/50 text-white'
           : 'bg-white/95 backdrop-blur-md border-slate-200/50 text-slate-900'
       }`}
     >

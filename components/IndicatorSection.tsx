@@ -107,7 +107,7 @@ export default function IndicatorSection({
             className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold rounded-full border transition-colors ${
               activeView === v.id
                 ? isDark
-                  ? 'bg-white text-teal-900 border-white'
+                  ? 'bg-white text-emerald-950 border-white'
                   : 'bg-primary text-white border-primary'
                 : isDark
                   ? 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20'
@@ -142,7 +142,7 @@ export default function IndicatorSection({
       </p>
       <div
         className={`absolute -bottom-16 -right-16 w-48 h-48 rounded-full opacity-30 blur-3xl ${
-          isDark ? 'bg-teal-400' : 'bg-primary-container'
+          isDark ? 'bg-emerald-400' : 'bg-primary-container'
         }`}
       />
     </div>
@@ -248,17 +248,23 @@ export default function IndicatorSection({
   }
 
   if (variant === 'dark') {
+    /* Full-viewport-width strip (no rounded “card”); inner column aligns with main via lg:ml-72 */
     return (
-      <section id={meta.id} className="scroll-mt-24 mb-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-12 bg-teal-900 rounded-[2.5rem]">
-        {header}
-        <div className="grid grid-cols-12 gap-6 mt-6">
-          <div className="col-span-12 lg:col-span-8 bg-white/5 rounded-[2rem] p-5 xl:p-6 backdrop-blur-sm">
-            {viewSwitcher}
-            {chartContent}
-          </div>
-          <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
-            {keyFinding}
-            {technicalDetails}
+      <section
+        id={meta.id}
+        className="lc-dark-strip scroll-mt-24 mb-20 w-screen max-w-[100vw] ml-[calc(50%-50vw)] rounded-none border-y border-emerald-800/50 bg-emerald-950 py-12 text-white shadow-none"
+      >
+        <div className="px-4 sm:px-6 lg:ml-72 lg:pl-0 lg:pr-8 xl:pr-12">
+          {header}
+          <div className="grid grid-cols-12 gap-6 mt-6">
+            <div className="col-span-12 lg:col-span-8 bg-white/5 rounded-[2rem] p-5 xl:p-6 backdrop-blur-sm">
+              {viewSwitcher}
+              {chartContent}
+            </div>
+            <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
+              {keyFinding}
+              {technicalDetails}
+            </div>
           </div>
         </div>
       </section>

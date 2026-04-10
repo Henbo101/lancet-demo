@@ -155,7 +155,7 @@ export default function EntityPicker({
         <div
           className={`absolute left-0 top-full mt-2 w-72 max-h-80 rounded-2xl shadow-2xl border overflow-hidden z-50 ${
             dark
-              ? 'bg-teal-900 border-teal-700/50 text-white'
+              ? 'bg-emerald-950 border-emerald-700/50 text-white'
               : 'bg-white border-slate-200 text-slate-900'
           }`}
         >
