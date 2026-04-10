@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Oswald, Open_Sans } from 'next/font/google';
 import './globals.css';
 import AppSidebar from '@/components/AppSidebar';
+import ClientAccessGate from '@/components/ClientAccessGate';
 
 const oswald = Oswald({
   subsets: ['latin'],
@@ -45,6 +46,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
+        <ClientAccessGate>
         {/* ── Top nav bar ── */}
         <header className="fixed top-0 w-full z-50 glass shadow-sm px-6 py-3">
           <div className="max-w-screen-2xl mx-auto flex justify-between items-center">
@@ -110,6 +112,7 @@ export default function RootLayout({
             </div>
           </div>
         </footer>
+        </ClientAccessGate>
       </body>
     </html>
   );
