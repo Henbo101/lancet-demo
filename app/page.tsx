@@ -27,7 +27,7 @@ export default function Home() {
   return (
     <>
       {/* ── Hero section ── */}
-      <section id="hero" className="mt-8 mb-16 scroll-mt-24 w-full max-w-none">
+      <section id="hero" className="mt-8 mb-16 scroll-mt-28 w-full max-w-none">
         <div className="bg-surface-container-low rounded-[2.5rem] p-8 xl:p-12 w-full max-w-none">
           <div className="inline-block bg-primary/10 text-primary text-xs font-headline font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-8">
             Indicator 1.1
@@ -62,12 +62,12 @@ export default function Home() {
         <Chart111Attr />
       </IndicatorSection>
 
-      {/* ── 1.1.1 Vulnerable — sidebar left ── */}
+      {/* ── 1.1.1 Vulnerable — chart left, metadata right ── */}
       <IndicatorSection
         meta={indicators[1]}
         downloadData={[...data111vuln] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.1-vulnerable.csv"
-        variant="splitLeft"
+        variant="splitRight"
         showNumberBadge={false}
       >
         <Chart111Vuln />

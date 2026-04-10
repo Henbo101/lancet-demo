@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "deploy:v2": "npm run build && gh-pages -d out -r https://github.com/Henbo101/lancet-demo-v2.git -b gh-pages",
+    "build:gh-pages": "BASE_PATH=/lancet-demo-v2 next build",
+    "deploy:v2": "npm run build:gh-pages && gh-pages -d out -r https://github.com/Henbo101/lancet-demo-v2.git -b gh-pages",
     "start": "next start",
     "lint": "next lint"
   },

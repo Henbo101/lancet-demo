@@ -74,8 +74,8 @@ export default function WorldChoroplethMap({
   const onLeave = useCallback(() => setHover(null), []);
 
   return (
-    <div className="relative h-[420px] w-full">
-      <ParentSize>
+    <div className="relative h-[420px] w-full min-w-0">
+      <ParentSize debounceTime={0} initialSize={{ width: 400, height: 420 }}>
         {({ width, height }) => {
           if (width < 10 || height < 10) return null;
 

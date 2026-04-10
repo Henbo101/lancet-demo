@@ -151,8 +151,8 @@ export default function Chart112() {
 
       <YearPlaybackBar playback={playback} className="mb-3" />
 
-      <div className="h-[420px] relative">
-        <ParentSize>
+      <div className="h-[420px] w-full min-w-0 relative">
+        <ParentSize debounceTime={0} initialSize={{ width: 400, height: 420 }}>
           {({ width, height }) => {
             if (width < 10 || height < 10) return null;
             const innerW = width - margin.left - margin.right;

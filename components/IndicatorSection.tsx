@@ -247,15 +247,15 @@ export default function IndicatorSection({
 
   if (variant === 'immersive') {
     return (
-      <section id={meta.id} className="scroll-mt-24 mb-20">
+      <section id={meta.id} className="scroll-mt-28 mb-20">
         {header}
         <div className="grid grid-cols-12 gap-6 mt-6">
-          <div className="col-span-12 bg-surface-container-lowest rounded-[2rem] p-5 xl:p-6 shadow-sm">
+          <div className="col-span-12 min-w-0 bg-surface-container-lowest rounded-[2rem] p-5 xl:p-6 shadow-sm">
             {viewSwitcher}
             {chartContent}
           </div>
-          <div className="col-span-12 lg:col-span-6">{keyFinding}</div>
-          <div className="col-span-12 lg:col-span-6">{technicalDetails}</div>
+          <div className="col-span-12 lg:col-span-4">{keyFinding}</div>
+          <div className="col-span-12 lg:col-span-8">{technicalDetails}</div>
         </div>
       </section>
     );
@@ -263,14 +263,14 @@ export default function IndicatorSection({
 
   if (variant === 'splitLeft') {
     return (
-      <section id={meta.id} className="scroll-mt-24 mb-20">
+      <section id={meta.id} className="scroll-mt-28 mb-20">
         {header}
         <div className="grid grid-cols-12 gap-6 mt-6">
           <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
             {keyFinding}
             {technicalDetails}
           </div>
-          <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-[2rem] p-5 xl:p-6 shadow-sm">
+          <div className="col-span-12 lg:col-span-8 min-w-0 bg-surface-container-lowest rounded-[2rem] p-5 xl:p-6 shadow-sm">
             {viewSwitcher}
             {chartContent}
           </div>
@@ -281,10 +281,10 @@ export default function IndicatorSection({
 
   if (variant === 'splitRight') {
     return (
-      <section id={meta.id} className="scroll-mt-24 mb-20">
+      <section id={meta.id} className="scroll-mt-28 mb-20">
         {header}
         <div className="grid grid-cols-12 gap-6 mt-6">
-          <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-[2rem] p-5 xl:p-6 shadow-sm">
+          <div className="col-span-12 lg:col-span-8 min-w-0 bg-surface-container-lowest rounded-[2rem] p-5 xl:p-6 shadow-sm">
             {viewSwitcher}
             {chartContent}
           </div>
@@ -303,11 +303,11 @@ export default function IndicatorSection({
     return (
       <section
         id={meta.id}
-        className="lc-dark-strip scroll-mt-24 mb-20 rounded-none border-y border-emerald-800/50 bg-emerald-950 py-12 text-white shadow-none"
+        className="lc-dark-strip scroll-mt-28 mb-20 rounded-none border-y border-emerald-800/50 bg-emerald-950 py-12 text-white shadow-none"
       >
         {header}
         <div className="grid grid-cols-12 gap-6 mt-6">
-          <div className="col-span-12 lg:col-span-8 bg-white/5 rounded-[2rem] p-5 xl:p-6 backdrop-blur-sm">
+          <div className="col-span-12 lg:col-span-8 min-w-0 bg-white/5 rounded-[2rem] p-5 xl:p-6 backdrop-blur-sm">
             {viewSwitcher}
             {chartContent}
           </div>
@@ -322,10 +322,10 @@ export default function IndicatorSection({
 
   if (variant === 'dashboard') {
     return (
-      <section id={meta.id} className="scroll-mt-24 mb-20">
+      <section id={meta.id} className="scroll-mt-28 mb-20">
         {header}
         <div className="grid grid-cols-12 gap-4 mt-6">
-          <div className="col-span-12 lg:col-span-9 bg-surface-container-lowest rounded-[2rem] p-5 xl:p-6 shadow-sm">
+          <div className="col-span-12 lg:col-span-9 min-w-0 bg-surface-container-lowest rounded-[2rem] p-5 xl:p-6 shadow-sm">
             {viewSwitcher}
             {chartContent}
           </div>
@@ -340,10 +340,10 @@ export default function IndicatorSection({
 
   if (variant === 'bignum') {
     return (
-      <section id={meta.id} className="scroll-mt-24 mb-20">
+      <section id={meta.id} className="scroll-mt-28 mb-20">
         {header}
         <div className="mt-6">
-          <div className="bg-surface-container-lowest rounded-[2rem] p-5 xl:p-6 shadow-sm mb-6">
+          <div className="min-w-0 bg-surface-container-lowest rounded-[2rem] p-5 xl:p-6 shadow-sm mb-6">
             {viewSwitcher}
             {chartContent}
           </div>
@@ -358,7 +358,7 @@ export default function IndicatorSection({
 
   // conclusion (default fallback)
   return (
-    <section id={meta.id} className="scroll-mt-24 mb-20">
+    <section id={meta.id} className="scroll-mt-28 mb-20">
       {header}
       <div className="mt-6 bg-surface-container-low rounded-[2.5rem] p-6 xl:p-8">
         <div className="grid grid-cols-12 gap-6">
@@ -366,7 +366,7 @@ export default function IndicatorSection({
             {keyFinding}
             {technicalDetails}
           </div>
-          <div className="col-span-12 lg:col-span-7 bg-white rounded-[2rem] p-5 xl:p-6 shadow-sm">
+          <div className="col-span-12 lg:col-span-7 min-w-0 bg-white rounded-[2rem] p-5 xl:p-6 shadow-sm">
             {viewSwitcher}
             {chartContent}
           </div>

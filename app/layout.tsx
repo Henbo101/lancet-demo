@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
 import { Oswald, Open_Sans } from 'next/font/google';
 import './globals.css';
 import AppSidebar from '@/components/AppSidebar';
@@ -46,14 +48,20 @@ export default function RootLayout({
         {/* ── Top nav bar ── */}
         <header className="fixed top-0 w-full z-50 glass shadow-sm px-6 py-3">
           <div className="max-w-screen-2xl mx-auto flex justify-between items-center">
-            <div className="shrink-0">
-              <span className="text-2xl font-bold tracking-tighter text-teal-950 font-headline uppercase">
-                Lancet Countdown
-              </span>
-              <span className="text-2xl font-light tracking-tighter text-primary font-headline ml-1">
-                2026
-              </span>
-            </div>
+            <Link
+              href="/"
+              className="shrink-0 inline-flex items-center"
+              aria-label="Lancet Countdown — home"
+            >
+              <Image
+                src="/lancet-countdown-logo.png"
+                alt=""
+                width={408}
+                height={408}
+                className="h-[4.5rem] w-[4.5rem] sm:h-20 sm:w-20 object-contain"
+                priority
+              />
+            </Link>
             <nav className="hidden lg:flex items-center space-x-8 ml-8">
               {topTabs.map((tab) => (
                 <a
@@ -79,7 +87,7 @@ export default function RootLayout({
           </div>
         </header>
 
-        <div className="flex pt-20 min-h-screen">
+        <div className="flex pt-28 min-h-screen">
           <AppSidebar />
 
           {/* ── Main content canvas ── */}

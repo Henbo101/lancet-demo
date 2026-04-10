@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { SIDEBAR_SCROLL_IDS, sidebarNavStructure, type SidebarScrollId } from '@/lib/navConfig';
 
 /** Pixels from viewport top; section is “current” once its top crosses this (below fixed header). */
-const SCROLL_ACTIVATION_OFFSET = 132;
+const SCROLL_ACTIVATION_OFFSET = 164;
 
 function computeActiveSection(): SidebarScrollId {
   if (typeof document === 'undefined') return 'hero';
@@ -38,7 +38,7 @@ export default function AppSidebar() {
   const isHeroActive = activeId === 'hero';
 
   return (
-    <aside className="hidden lg:flex fixed left-4 top-20 bottom-4 w-64 glass rounded-3xl shadow-2xl shadow-slate-200/50 flex-col p-4 z-40 overflow-y-auto">
+    <aside className="hidden lg:flex fixed left-4 top-28 bottom-4 w-64 glass rounded-3xl shadow-2xl shadow-slate-200/50 flex-col p-4 z-40 overflow-y-auto">
       <div className="px-4 pt-6 pb-4">
         <div className="text-2xl font-bold text-teal-950 font-headline tracking-tight">INDICATORS</div>
         <div className="flex items-center gap-1.5 mt-1">
