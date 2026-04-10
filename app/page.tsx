@@ -1,5 +1,6 @@
 import IndicatorSection from '@/components/IndicatorSection';
 import Chart111Attr from '@/components/indicators/Chart111Attr';
+import Chart111AttrMap from '@/components/indicators/Chart111AttrMap';
 import Chart111Vuln from '@/components/indicators/Chart111Vuln';
 import Chart112 from '@/components/indicators/Chart112';
 import Chart113Pwhl from '@/components/indicators/Chart113Pwhl';
@@ -45,6 +46,7 @@ export default function Home() {
         downloadData={[...data111attr] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.1-attributable.csv"
         variant="immersive"
+        mapView={<Chart111AttrMap />}
       >
         <Chart111Attr />
       </IndicatorSection>

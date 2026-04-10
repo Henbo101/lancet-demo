@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { IndicatorMeta } from '@/lib/metadata';
 import DataTable from './DataTable';
 import { ChartThemeProvider } from './ChartThemeContext';
@@ -14,13 +14,15 @@ export type SectionVariant =
   | 'bignum'
   | 'conclusion';
 
-type ViewMode = 'trend' | 'table';
+type ViewMode = 'trend' | 'table' | 'map';
 
 interface Props {
   meta: IndicatorMeta;
   downloadData: Record<string, unknown>[];
   downloadFilename: string;
   children: React.ReactNode;
+  /** When set, a Map tab is shown (choropleth or other geography). Omit when data is not spatial. */
+  mapView?: React.ReactNode;
   variant?: SectionVariant;
 }
 
@@ -41,7 +43,7 @@ function toCsv(data: Record<string, unknown>[]): string {
   return [headers.join(','), ...rows].join('\n');
 }
 
-const VIEWS: { id: ViewMode; label: string; icon: string }[] = [
+const BASE_VIEWS: { id: Exclude<ViewMode, 'map'>; label: string; icon: string }[] = [
   { id: 'trend', label: 'Trend', icon: 'show_chart' },
   { id: 'table', label: 'Table', icon: 'table_rows' },
 ];
@@ -51,10 +53,17 @@ export default function IndicatorSection({
   downloadData,
   downloadFilename,
   children,
+  mapView,
   variant = 'immersive',
 }: Props) {
   const [open, setOpen] = useState(false);
   const [activeView, setActiveView] = useState<ViewMode>('trend');
+
+  const viewTabs = useMemo(() => {
+    const tabs: { id: ViewMode; label: string; icon: string }[] = [...BASE_VIEWS];
+    if (mapView) tabs.push({ id: 'map', label: 'Map', icon: 'map' });
+    return tabs;
+  }, [mapView]);
 
   const handleDownload = useCallback(() => {
     const csv = toCsv(downloadData);
@@ -100,7 +109,7 @@ export default function IndicatorSection({
   const viewSwitcher = (
     <div className="flex items-center justify-between mb-4">
       <div className="flex space-x-1.5">
-        {VIEWS.map((v) => (
+        {viewTabs.map((v) => (
           <button
             key={v.id}
             onClick={() => setActiveView(v.id)}
@@ -124,7 +133,9 @@ export default function IndicatorSection({
 
   const chartContent = (
     <ChartThemeProvider dark={isDark}>
-      {activeView === 'trend' ? children : <DataTable data={downloadData} />}
+      {activeView === 'trend' && children}
+      {activeView === 'table' && <DataTable data={downloadData} />}
+      {activeView === 'map' && mapView}
     </ChartThemeProvider>
   );
 
