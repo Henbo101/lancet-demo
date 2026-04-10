@@ -19,6 +19,8 @@ import {
   TooltipCard,
   type TooltipPayload,
 } from '@/components/ChartTooltip';
+import { useChartTheme } from '@/components/ChartThemeContext';
+import { bandEntityCenterX } from '@/lib/chartGeometry';
 
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 
@@ -95,6 +97,7 @@ function getDataForEntity(entity: string): Row[] {
 }
 
 export default function Chart111Attr() {
+  const { dark } = useChartTheme();
   const [selected, setSelected] = useState<string[]>(['Global']);
 
   const colorMap = useMemo(() => buildColorMap(selected), [selected]);
@@ -119,6 +122,7 @@ export default function Chart111Attr() {
           categories={entityCategories}
           selected={selected}
           onChange={setSelected}
+          dark={dark}
         />
       </div>
 
@@ -147,8 +151,16 @@ export default function Chart111Attr() {
               nice: true,
             });
 
+            const maxPct = Math.max(
+              5,
+              ...[...allData.values()].flatMap((rows) =>
+                rows
+                  .filter((d) => d.Observed > 0)
+                  .map((d) => (d.Attributable_to_CC / d.Observed) * 100),
+              ),
+            );
             const yRightScale = scaleLinear<number>({
-              domain: [0, 100],
+              domain: [0, Math.min(100, maxPct * 1.1)],
               range: [innerH, 0],
             });
 
@@ -175,22 +187,25 @@ export default function Chart111Attr() {
               return { year, rows };
             };
 
-            return <ChartInner
-              width={width}
-              height={height}
-              innerW={innerW}
-              innerH={innerH}
-              xScale={xScale}
-              yScale={yScale}
-              yRightScale={yRightScale}
-              allData={allData}
-              selected={selected}
-              colorMap={colorMap}
-              years={years}
-              barWidth={barWidth}
-              entityCount={entityCount}
-              buildTooltip={buildTooltip}
-            />;
+            return (
+              <ChartInner
+                width={width}
+                height={height}
+                innerW={innerW}
+                innerH={innerH}
+                xScale={xScale}
+                yScale={yScale}
+                yRightScale={yRightScale}
+                allData={allData}
+                selected={selected}
+                colorMap={colorMap}
+                years={years}
+                barWidth={barWidth}
+                entityCount={entityCount}
+                buildTooltip={buildTooltip}
+                dark={dark}
+              />
+            );
           }}
         </ParentSize>
       </div>
@@ -213,6 +228,7 @@ interface ChartInnerProps {
   barWidth: number;
   entityCount: number;
   buildTooltip: (year: number) => TooltipPayload;
+  dark: boolean;
 }
 
 function ChartInner({
@@ -230,8 +246,10 @@ function ChartInner({
   barWidth,
   entityCount,
   buildTooltip,
+  dark,
 }: ChartInnerProps) {
   const stableBuildTooltip = useCallback(buildTooltip, [buildTooltip]);
+  const gap = 2;
 
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
     useChartHover({
@@ -243,17 +261,17 @@ function ChartInner({
 
   const dotPositions = useMemo(() => {
     if (hoveredYear == null) return [];
-    return selected.flatMap((entity) => {
+    return selected.flatMap((entity, ei) => {
       const d = allData.get(entity)?.find((r) => r.Year === hoveredYear);
       if (!d || d.Observed === 0) return [];
       const pctVal = (d.Attributable_to_CC / d.Observed) * 100;
       return [{
-        x: getXForYear(hoveredYear),
+        x: bandEntityCenterX(hoveredYear, ei, entityCount, xScale, barWidth, gap),
         y: yRightScale(pctVal),
         color: colorMap[entity],
       }];
     });
-  }, [hoveredYear, selected, allData, getXForYear, yRightScale, colorMap]);
+  }, [hoveredYear, selected, allData, yRightScale, colorMap, entityCount, xScale, barWidth]);
 
   return (
     <>
@@ -302,7 +320,7 @@ function ChartInner({
           })}
 
           {/* % attributable line per entity (right axis) */}
-          {selected.map((entity) => {
+          {selected.map((entity, ei) => {
             const rows = allData.get(entity) ?? [];
             const lineData = rows
               .filter((d) => d.Observed > 0)
@@ -315,35 +333,14 @@ function ChartInner({
               <g key={`line-${entity}`}>
                 <LinePath
                   data={lineData}
-                  x={(d) => (xScale(d.year) ?? 0) + xScale.bandwidth() / 2}
+                  x={(d) =>
+                    bandEntityCenterX(d.year, ei, entityCount, xScale, barWidth, gap)
+                  }
                   y={(d) => yRightScale(d.pct)}
                   stroke={color}
                   strokeWidth={2.5}
                   curve={curveMonotoneX}
                 />
-                {lineData.map((d) => (
-                  <g key={d.year}>
-                    <circle
-                      cx={(xScale(d.year) ?? 0) + xScale.bandwidth() / 2}
-                      cy={yRightScale(d.pct)}
-                      r={3}
-                      fill={color}
-                      stroke="#fff"
-                      strokeWidth={1.5}
-                    />
-                    <text
-                      x={(xScale(d.year) ?? 0) + xScale.bandwidth() / 2}
-                      y={yRightScale(d.pct) - 10}
-                      textAnchor="middle"
-                      fill={color}
-                      fontSize={11}
-                      fontWeight={700}
-                      fontFamily="'Open Sans', sans-serif"
-                    >
-                      {pct(d.pct)}
-                    </text>
-                  </g>
-                ))}
               </g>
             );
           })}
@@ -429,6 +426,7 @@ function ChartInner({
         tooltipData={tooltipData}
         tooltipLeft={tooltipLeft}
         tooltipTop={tooltipTop}
+        dark={dark}
       />
     </>
   );

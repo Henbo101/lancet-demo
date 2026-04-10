@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import type { IndicatorMeta } from '@/lib/metadata';
 import DataTable from './DataTable';
+import { ChartThemeProvider } from './ChartThemeContext';
 
 export type SectionVariant =
   | 'immersive'
@@ -121,7 +122,11 @@ export default function IndicatorSection({
     </div>
   );
 
-  const chartContent = activeView === 'trend' ? children : <DataTable data={downloadData} />;
+  const chartContent = (
+    <ChartThemeProvider dark={isDark}>
+      {activeView === 'trend' ? children : <DataTable data={downloadData} />}
+    </ChartThemeProvider>
+  );
 
   const keyFinding = (
     <div

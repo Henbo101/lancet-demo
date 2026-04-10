@@ -11,6 +11,8 @@ import { curveMonotoneX } from '@visx/curve';
 import { globalData, whoData, hdiData, lcData } from '@/lib/data/indicator111vuln';
 import EntityPicker, { buildColorMap, type EntityCategory } from '@/components/EntityPicker';
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
+import { useChartTheme } from '@/components/ChartThemeContext';
+import { linearGroupedCenterX } from '@/lib/chartGeometry';
 
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 const fmt = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -59,6 +61,7 @@ function getDataForEntity(entity: string): Row[] {
 }
 
 export default function Chart111Vuln() {
+  const { dark } = useChartTheme();
   const [selected, setSelected] = useState<string[]>(['Global']);
   const [activeSeries, setActiveSeries] = useState<string[]>([
     SERIES_DEFS[0].avgKey,
@@ -95,6 +98,7 @@ export default function Chart111Vuln() {
           categories={entityCategories}
           selected={selected}
           onChange={setSelected}
+          dark={dark}
         />
         <div className="flex items-center gap-2 ml-auto">
           {SERIES_DEFS.map((s) => {
@@ -183,6 +187,7 @@ export default function Chart111Vuln() {
                 seriesColors={seriesColors}
                 years={years}
                 buildTooltip={buildTooltip}
+                dark={dark}
               />
             );
           }}
@@ -206,6 +211,7 @@ interface InnerProps {
   seriesColors: Record<string, string>;
   years: number[];
   buildTooltip: (year: number) => TooltipPayload;
+  dark: boolean;
 }
 
 function ChartInner({
@@ -222,23 +228,28 @@ function ChartInner({
   seriesColors,
   years,
   buildTooltip,
+  dark,
 }: InnerProps) {
   const stableBuild = useCallback(buildTooltip, [buildTooltip]);
+  const nEnt = selected.length;
+  const slotWidth = Math.max(5, Math.min(14, 42 / Math.max(nEnt, 1)));
+
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
     useChartHover({ xScale, years, margin, buildTooltip: stableBuild });
 
   const dotPositions = useMemo(() => {
     if (hoveredYear == null) return [];
-    return selected.flatMap((entity) => {
+    const xYear = getXForYear(hoveredYear);
+    return selected.flatMap((entity, ei) => {
       const d = allData.get(entity)?.find((r) => r.Year === hoveredYear);
       if (!d) return [];
       return activeSeries.map((k) => ({
-        x: getXForYear(hoveredYear),
+        x: linearGroupedCenterX(ei, nEnt, xYear, slotWidth),
         y: yScale(d[k] ?? 0),
         color: seriesColors[k],
       }));
     });
-  }, [hoveredYear, selected, allData, getXForYear, yScale, activeSeries, seriesColors]);
+  }, [hoveredYear, selected, allData, getXForYear, yScale, activeSeries, seriesColors, nEnt, slotWidth]);
 
   const baselineX1 = xScale(1986);
   const baselineX2 = xScale(2005);
@@ -266,42 +277,42 @@ function ChartInner({
             </text>
           )}
 
-          {/* Total person-days bars (right axis) — show for primary entity */}
-          {(() => {
-            const entity = selected[0];
+          {/* Total person-days bars (right axis) — one grouped bar per entity per year */}
+          {selected.map((entity, ei) => {
             const rows = allData.get(entity) ?? [];
             const activeTotalKeys = activeSeries.map((k) => k.replace('average', 'total'));
-            const barWidth = Math.max(innerW / rows.length - 2, 1);
+            const barW = Math.max(2, slotWidth - 1);
             return rows.map((d) => {
               const totalSum = activeTotalKeys.reduce((sum, k) => sum + (d[k] ?? 0), 0);
               const barH = innerH - (yRightScale(totalSum) ?? 0);
+              const cx = linearGroupedCenterX(ei, nEnt, xScale(d.Year) ?? 0, slotWidth);
               return (
                 <Bar
-                  key={d.Year}
-                  x={(xScale(d.Year) ?? 0) - barWidth / 2}
+                  key={`${entity}-${d.Year}-tot`}
+                  x={cx - barW / 2}
                   y={yRightScale(totalSum) ?? 0}
-                  width={barWidth}
+                  width={barW}
                   height={barH}
                   fill="#004e6f"
-                  fillOpacity={0.06}
+                  fillOpacity={0.07 + (ei % 3) * 0.02}
                   rx={1}
                 />
               );
             });
-          })()}
+          })}
 
           {/* Lines per entity per active series */}
-          {selected.map((entity) => {
+          {selected.map((entity, ei) => {
             const rows = allData.get(entity) ?? [];
             return activeSeries.map((k) => (
               <LinePath
                 key={`${entity}-${k}`}
                 data={rows}
-                x={(d) => xScale(d.Year) ?? 0}
+                x={(d) => linearGroupedCenterX(ei, nEnt, xScale(d.Year) ?? 0, slotWidth)}
                 y={(d) => yScale(d[k] ?? 0) ?? 0}
                 stroke={seriesColors[k]}
                 strokeWidth={2}
-                strokeOpacity={selected.length > 1 && entity !== selected[0] ? 0.5 : 1}
+                strokeOpacity={selected.length > 1 && entity !== selected[0] ? 0.55 : 1}
                 curve={curveMonotoneX}
               />
             ));
@@ -313,6 +324,8 @@ function ChartInner({
             const last = rows.find((d) => d.Year === 2024);
             if (!last) return null;
             const baselineRows = rows.filter((d) => d.Year >= 1986 && d.Year <= 2005);
+            const x2024 = xScale(2024) ?? 0;
+            const labelX = Math.min(x2024 + 6, innerW - 4);
             return activeSeries.map((k, i) => {
               if (baselineRows.length === 0) return null;
               const baselineAvg = baselineRows.reduce((s, d) => s + (d[k] ?? 0), 0) / baselineRows.length;
@@ -322,12 +335,13 @@ function ChartInner({
               return (
                 <text
                   key={k}
-                  x={xScale(2024)! + 8}
-                  y={(yScale(last[k]) ?? 0) + (i * 16)}
+                  x={labelX}
+                  y={(yScale(last[k]) ?? 0) + i * 16}
                   fontSize={10}
                   fontWeight={700}
                   fill={seriesColors[k]}
                   fontFamily="'Open Sans', sans-serif"
+                  textAnchor="start"
                 >
                   {def.label}: +{changePct}%
                 </text>
@@ -384,7 +398,7 @@ function ChartInner({
           dotPositions={dotPositions}
         />
       </svg>
-      <TooltipCard tooltipOpen={tooltipOpen} tooltipData={tooltipData} tooltipLeft={tooltipLeft} tooltipTop={tooltipTop} />
+      <TooltipCard tooltipOpen={tooltipOpen} tooltipData={tooltipData} tooltipLeft={tooltipLeft} tooltipTop={tooltipTop} dark={dark} />
     </>
   );
 }

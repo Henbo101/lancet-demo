@@ -26,15 +26,8 @@ interface Props {
   dark?: boolean;
 }
 
-export function getEntityColor(
-  entity: string,
-  selected: string[],
-): string {
-  if (entity === 'Global') return ENTITY_COLORS[0];
-  const idx = selected.indexOf(entity);
-  if (idx < 0) return ENTITY_COLORS[0];
-  const colorIdx = entity === 'Global' ? 0 : selected.filter(s => s !== 'Global').indexOf(entity) + 1;
-  return ENTITY_COLORS[colorIdx % ENTITY_COLORS.length];
+export function getEntityColor(entity: string, selected: string[]): string {
+  return buildColorMap(selected)[entity] ?? ENTITY_COLORS[0];
 }
 
 export function buildColorMap(selected: string[]): Record<string, string> {

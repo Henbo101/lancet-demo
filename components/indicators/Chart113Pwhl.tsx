@@ -10,6 +10,7 @@ import { scaleLinear } from '@visx/scale';
 import { curveMonotoneX } from '@visx/curve';
 import { globalData, whoData, hdiData } from '@/lib/data/indicator113pwhl';
 import EntityPicker, { type EntityCategory } from '@/components/EntityPicker';
+import { useChartTheme } from '@/components/ChartThemeContext';
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
 
 const SECTORS: { raw: string; label: string; color: string }[] = [
@@ -29,6 +30,7 @@ const whoRegions: string[] = [...new Set((whoData as unknown as Record<string, u
 const hdiLevels: string[] = [...new Set((hdiData as unknown as Record<string, unknown>[]).map((d) => d['HDI level'] as string))].sort();
 
 const entityCategories: EntityCategory[] = [
+  { category: 'Summary', items: ['Global'] },
   { category: 'WHO Regions', items: whoRegions },
   { category: 'HDI Levels', items: hdiLevels },
 ];
@@ -56,6 +58,7 @@ function getDataForEntity(entity: string): StackDatum[] {
 }
 
 export default function Chart113PWHL() {
+  const { dark } = useChartTheme();
   const [selected, setSelected] = useState<string[]>(['Global']);
   const [activeSectors, setActiveSectors] = useState<string[]>(ALL_KEYS);
 
@@ -64,7 +67,13 @@ export default function Chart113PWHL() {
   const activeKeys = useMemo(() => ALL_KEYS.filter((k) => activeSectors.includes(k)), [activeSectors]);
 
   const toggle = (key: string) =>
-    setActiveSectors((prev) => prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]);
+    setActiveSectors((prev) => {
+      if (prev.includes(key)) {
+        if (prev.length <= 1) return prev;
+        return prev.filter((k) => k !== key);
+      }
+      return [...prev, key];
+    });
 
   const baselineRows = useMemo(
     () => data.filter((d) => d.Year >= 1990 && d.Year <= 1999),
@@ -81,8 +90,12 @@ export default function Chart113PWHL() {
         <EntityPicker
           categories={entityCategories}
           selected={selected}
-          onChange={(entities) => setSelected(entities.length > 0 ? [entities[entities.length - 1]] : ['Global'])}
+          onChange={(next) => {
+            if (next.length === 0) setSelected(['Global']);
+            else setSelected([next[next.length - 1]]);
+          }}
           maxSelections={1}
+          dark={dark}
         />
         <div className="flex flex-wrap items-center gap-2 ml-auto">
           {SECTORS.map((s) => {
@@ -129,7 +142,7 @@ export default function Chart113PWHL() {
               return { year, rows, supplementary: [{ label: 'Total (ag+con)', value: d.TotalSunAgCon.toFixed(2) + 'B' }] };
             };
 
-            return <ChartInner width={width} height={height} innerW={innerW} innerH={innerH} xScale={xScale} yScale={yScale} yRightScale={yRightScale} data={data} activeKeys={activeKeys} baselinePP={baselinePP} years={years} buildTooltip={buildTooltip} />;
+            return <ChartInner width={width} height={height} innerW={innerW} innerH={innerH} xScale={xScale} yScale={yScale} yRightScale={yRightScale} data={data} activeKeys={activeKeys} baselinePP={baselinePP} years={years} buildTooltip={buildTooltip} dark={dark} />;
           }}
         </ParentSize>
       </div>
@@ -145,9 +158,10 @@ interface InnerProps {
   data: StackDatum[]; activeKeys: string[];
   baselinePP: number | null; years: number[];
   buildTooltip: (year: number) => TooltipPayload;
+  dark: boolean;
 }
 
-function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale, data, activeKeys, baselinePP, years, buildTooltip }: InnerProps) {
+function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale, data, activeKeys, baselinePP, years, buildTooltip, dark }: InnerProps) {
   const stableBuild = useCallback(buildTooltip, [buildTooltip]);
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
     useChartHover({ xScale, years, margin, buildTooltip: stableBuild });
@@ -213,7 +227,7 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
         </Group>
         <Crosshair hoveredYear={hoveredYear} getXForYear={getXForYear} innerHeight={innerH} innerWidth={innerW} margin={margin} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} dotPositions={dotPositions} />
       </svg>
-      <TooltipCard tooltipOpen={tooltipOpen} tooltipData={tooltipData} tooltipLeft={tooltipLeft} tooltipTop={tooltipTop} />
+      <TooltipCard tooltipOpen={tooltipOpen} tooltipData={tooltipData} tooltipLeft={tooltipLeft} tooltipTop={tooltipTop} dark={dark} />
     </>
   );
 }

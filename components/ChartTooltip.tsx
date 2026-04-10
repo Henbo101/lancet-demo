@@ -80,7 +80,7 @@ export function useChartHover({
       const payload = buildTooltip(nearestYear);
       showTooltip({
         tooltipData: payload,
-        tooltipLeft: getXForYear(nearestYear) + margin.left,
+        tooltipLeft: getXForYear(nearestYear) + margin.left + 10,
         tooltipTop: point.y,
       });
     },

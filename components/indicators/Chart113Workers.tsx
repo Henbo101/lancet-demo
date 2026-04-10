@@ -11,6 +11,8 @@ import { curveMonotoneX } from '@visx/curve';
 import { globalData, whoData, lcData, hdiData } from '@/lib/data/indicator113workers';
 import EntityPicker, { buildColorMap, type EntityCategory } from '@/components/EntityPicker';
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
+import { useChartTheme } from '@/components/ChartThemeContext';
+import { bandEntityCenterX } from '@/lib/chartGeometry';
 
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 const fmtM = (v: number) => (v / 1e6).toFixed(1) + 'M';
@@ -47,6 +49,7 @@ function getDataForEntity(entity: string): Row[] {
 }
 
 export default function Chart113Workers() {
+  const { dark } = useChartTheme();
   const [selected, setSelected] = useState<string[]>(['Global']);
   const colorMap = useMemo(() => buildColorMap(selected), [selected]);
 
@@ -64,7 +67,7 @@ export default function Chart113Workers() {
   return (
     <>
       <div className="mb-4">
-        <EntityPicker categories={entityCategories} selected={selected} onChange={setSelected} />
+        <EntityPicker categories={entityCategories} selected={selected} onChange={setSelected} dark={dark} />
       </div>
 
       <div className="h-[420px] relative">
@@ -100,7 +103,7 @@ export default function Chart113Workers() {
               return { year, rows };
             };
 
-            return <ChartInner width={width} height={height} innerW={innerW} innerH={innerH} xScale={xScale} yScale={yScale} yRightScale={yRightScale} allData={allData} selected={selected} colorMap={colorMap} years={years} barW={barW} entityCount={entityCount} buildTooltip={buildTooltip} />;
+            return <ChartInner width={width} height={height} innerW={innerW} innerH={innerH} xScale={xScale} yScale={yScale} yRightScale={yRightScale} allData={allData} selected={selected} colorMap={colorMap} years={years} barW={barW} entityCount={entityCount} buildTooltip={buildTooltip} dark={dark} />;
           }}
         </ParentSize>
       </div>
@@ -117,21 +120,27 @@ interface InnerProps {
   selected: string[]; colorMap: Record<string, string>;
   years: number[]; barW: number; entityCount: number;
   buildTooltip: (year: number) => TooltipPayload;
+  dark: boolean;
 }
 
-function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale, allData, selected, colorMap, years, barW, entityCount, buildTooltip }: InnerProps) {
+function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale, allData, selected, colorMap, years, barW, entityCount, buildTooltip, dark }: InnerProps) {
+  const gap = 2;
   const stableBuild = useCallback(buildTooltip, [buildTooltip]);
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
     useChartHover({ xScale, years, margin, buildTooltip: stableBuild });
 
   const dotPositions = useMemo(() => {
     if (hoveredYear == null) return [];
-    return selected.flatMap((entity) => {
+    return selected.flatMap((entity, ei) => {
       const d = allData.get(entity)?.find((r) => r.Year === hoveredYear);
       if (!d) return [];
-      return [{ x: getXForYear(hoveredYear), y: yRightScale(d.pct), color: colorMap[entity] }];
+      return [{
+        x: bandEntityCenterX(hoveredYear, ei, entityCount, xScale, barW, gap),
+        y: yRightScale(d.pct),
+        color: colorMap[entity],
+      }];
     });
-  }, [hoveredYear, selected, allData, getXForYear, yRightScale, colorMap]);
+  }, [hoveredYear, selected, allData, yRightScale, colorMap, entityCount, xScale, barW]);
 
   return (
     <>
@@ -152,14 +161,14 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
           })}
 
           {/* % lines per entity (right axis) */}
-          {selected.map((entity) => {
+          {selected.map((entity, ei) => {
             const rows = allData.get(entity) ?? [];
             const color = colorMap[entity];
             return (
               <LinePath
                 key={`line-${entity}`}
                 data={rows}
-                x={(d) => (xScale(d.Year) ?? 0) + xScale.bandwidth() / 2}
+                x={(d) => bandEntityCenterX(d.Year, ei, entityCount, xScale, barW, gap)}
                 y={(d) => yRightScale(d.pct) ?? 0}
                 stroke={color}
                 strokeWidth={2.5}
@@ -184,7 +193,7 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
         </Group>
         <Crosshair hoveredYear={hoveredYear} getXForYear={getXForYear} innerHeight={innerH} innerWidth={innerW} margin={margin} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} dotPositions={dotPositions} />
       </svg>
-      <TooltipCard tooltipOpen={tooltipOpen} tooltipData={tooltipData} tooltipLeft={tooltipLeft} tooltipTop={tooltipTop} />
+      <TooltipCard tooltipOpen={tooltipOpen} tooltipData={tooltipData} tooltipLeft={tooltipLeft} tooltipTop={tooltipTop} dark={dark} />
     </>
   );
 }

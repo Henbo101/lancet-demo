@@ -10,12 +10,14 @@ import { scaleLinear } from '@visx/scale';
 import { curveMonotoneX } from '@visx/curve';
 import { globalData, whoData, hdiData, lcData } from '@/lib/data/indicator112';
 import EntityPicker, { type EntityCategory } from '@/components/EntityPicker';
+import { useChartTheme } from '@/components/ChartThemeContext';
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
 
+/* Stack order: bottom → top (moderate base, then high, extreme cap) */
 const LEVELS = [
-  { key: 'extreme', label: 'Extreme', color: '#004e6f' },
-  { key: 'high', label: 'High', color: '#B5334F' },
   { key: 'moderate', label: 'Moderate', color: '#E67E22' },
+  { key: 'high', label: 'High', color: '#B5334F' },
+  { key: 'extreme', label: 'Extreme', color: '#004e6f' },
 ] as const;
 const margin = { top: 24, right: 30, bottom: 40, left: 100 };
 const fmt = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -29,6 +31,7 @@ const hdiLevels: string[] = [...new Set((hdiData as unknown as Record<string, un
 const lcRegions: string[] = [...new Set((lcData as unknown as Record<string, unknown>[]).map((d) => d['Lancet Countdown region'] as string))].sort();
 
 const entityCategories: EntityCategory[] = [
+  { category: 'Summary', items: ['Global'] },
   { category: 'WHO Regions', items: whoRegions },
   { category: 'HDI Levels', items: hdiLevels },
   { category: 'LC Regions', items: lcRegions },
@@ -61,6 +64,7 @@ function getDataForEntity(entity: string): Row[] {
 }
 
 export default function Chart112() {
+  const { dark } = useChartTheme();
   const [selected, setSelected] = useState<string[]>(['Global']);
   const [heatClass, setHeatClass] = useState<1 | 3>(1);
 
@@ -90,8 +94,12 @@ export default function Chart112() {
         <EntityPicker
           categories={entityCategories}
           selected={selected}
-          onChange={(entities) => setSelected(entities.length > 0 ? [entities[entities.length - 1]] : ['Global'])}
+          onChange={(next) => {
+            if (next.length === 0) setSelected(['Global']);
+            else setSelected([next[next.length - 1]]);
+          }}
           maxSelections={1}
+          dark={dark}
         />
         <div className="flex items-center gap-2 ml-auto">
           {([1, 3] as const).map((c) => (
@@ -169,6 +177,7 @@ export default function Chart112() {
                 baselineAvg={baselineAvg}
                 years={years}
                 buildTooltip={buildTooltip}
+                dark={dark}
               />
             );
           }}
@@ -187,9 +196,10 @@ interface InnerProps {
   almField: string; baselineAvg: number | null;
   years: number[];
   buildTooltip: (year: number) => TooltipPayload;
+  dark: boolean;
 }
 
-function ChartInner({ width, height, innerW, innerH, xScale, yScale, data, fields, colorMap, almField, baselineAvg, years, buildTooltip }: InnerProps) {
+function ChartInner({ width, height, innerW, innerH, xScale, yScale, data, fields, colorMap, almField, baselineAvg, years, buildTooltip, dark }: InnerProps) {
   const stableBuild = useCallback(buildTooltip, [buildTooltip]);
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
     useChartHover({ xScale, years, margin, buildTooltip: stableBuild });
@@ -287,7 +297,7 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, data, field
         </Group>
         <Crosshair hoveredYear={hoveredYear} getXForYear={getXForYear} innerHeight={innerH} innerWidth={innerW} margin={margin} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} dotPositions={dotPositions} />
       </svg>
-      <TooltipCard tooltipOpen={tooltipOpen} tooltipData={tooltipData} tooltipLeft={tooltipLeft} tooltipTop={tooltipTop} />
+      <TooltipCard tooltipOpen={tooltipOpen} tooltipData={tooltipData} tooltipLeft={tooltipLeft} tooltipTop={tooltipTop} dark={dark} />
     </>
   );
 }
