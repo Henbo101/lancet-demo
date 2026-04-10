@@ -248,23 +248,22 @@ export default function IndicatorSection({
   }
 
   if (variant === 'dark') {
-    /* Full-viewport-width strip (no rounded “card”); inner column aligns with main via lg:ml-72 */
+    /* Strip aligns with main column (same horizontal rhythm as other sections). Avoid w-screen +
+       calc(50%-50vw) here: main is offset by lg:ml-72, so viewport bleed misaligns left/right. */
     return (
       <section
         id={meta.id}
-        className="lc-dark-strip scroll-mt-24 mb-20 w-screen max-w-[100vw] ml-[calc(50%-50vw)] rounded-none border-y border-emerald-800/50 bg-emerald-950 py-12 text-white shadow-none"
+        className="lc-dark-strip scroll-mt-24 mb-20 rounded-none border-y border-emerald-800/50 bg-emerald-950 py-12 text-white shadow-none"
       >
-        <div className="px-4 sm:px-6 lg:ml-72 lg:pl-0 lg:pr-8 xl:pr-12">
-          {header}
-          <div className="grid grid-cols-12 gap-6 mt-6">
-            <div className="col-span-12 lg:col-span-8 bg-white/5 rounded-[2rem] p-5 xl:p-6 backdrop-blur-sm">
-              {viewSwitcher}
-              {chartContent}
-            </div>
-            <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
-              {keyFinding}
-              {technicalDetails}
-            </div>
+        {header}
+        <div className="grid grid-cols-12 gap-6 mt-6">
+          <div className="col-span-12 lg:col-span-8 bg-white/5 rounded-[2rem] p-5 xl:p-6 backdrop-blur-sm">
+            {viewSwitcher}
+            {chartContent}
+          </div>
+          <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
+            {keyFinding}
+            {technicalDetails}
           </div>
         </div>
       </section>
