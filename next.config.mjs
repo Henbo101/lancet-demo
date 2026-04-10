@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
-  basePath: '/lancet-demo',
+  basePath: '/lancet-demo-v2',
   images: { unoptimized: true },
   webpack: (config) => {
     config.watchOptions = {

@@ -20,6 +20,24 @@ export const metadata: Metadata = {
     'Interactive data visualization demo for Indicator 1.1.1: Exposure of Vulnerable Populations to Heatwaves',
 };
 
+const topTabs = [
+  { label: 'Health Hazards, Exposures, and Impacts', active: true },
+  { label: 'Adaptation, Planning, and Resilience for Health', active: false },
+  { label: 'Mitigation Actions and Health Co-Benefits', active: false },
+  { label: 'Economics and Finance', active: false },
+  { label: 'Public and Political Engagement', active: false },
+];
+
+const sidebarSubItems = [
+  { label: '1.1.1 Heatwave Days (Attr.)', href: '#111attr' },
+  { label: '1.1.1 Heatwave Exposure (Vuln.)', href: '#111vuln' },
+  { label: '1.1.2 Heat & Physical Activity', href: '#112' },
+  { label: '1.1.3 Labour Capacity (PWHL)', href: '#113pwhl' },
+  { label: '1.1.3 Outdoor Workers', href: '#113workers' },
+  { label: '1.1.4 Sleep Loss', href: '#114' },
+  { label: '1.1.5 Heat-Related Mortality', href: '#115' },
+];
+
 export default function RootLayout({
   children,
 }: {
@@ -40,10 +58,20 @@ export default function RootLayout({
             <div className="text-2xl font-bold tracking-tighter text-teal-950 font-headline uppercase">
               Lancet Countdown
             </div>
-            <nav className="hidden md:flex space-x-8">
-              <a className="text-slate-600 font-medium hover:text-teal-800 transition-colors" href="#">Reports</a>
-              <a className="text-slate-600 font-medium hover:text-teal-800 transition-colors" href="#">Policy Briefs</a>
-              <a className="text-teal-700 border-b-2 border-teal-700 font-bold" href="#">Indicators</a>
+            <nav className="hidden md:flex space-x-6">
+              {topTabs.map((tab) => (
+                <a
+                  key={tab.label}
+                  className={
+                    tab.active
+                      ? 'text-xs text-teal-700 border-b-2 border-teal-700 font-bold'
+                      : 'text-xs text-slate-600 font-medium hover:text-teal-800 transition-colors'
+                  }
+                  href="#"
+                >
+                  {tab.label}
+                </a>
+              ))}
             </nav>
             <div className="flex items-center space-x-4">
               <div className="bg-surface-container-low px-3 py-1.5 rounded-full flex items-center space-x-2 text-on-surface-variant">
@@ -73,10 +101,18 @@ export default function RootLayout({
                 <span className="font-label text-sm text-left">Climate Impacts</span>
               </button>
               <div className="pl-12 py-2 space-y-3">
-                <a className="block text-xs font-bold text-teal-700" href="#">1.1 Health and Heat</a>
-                <a className="block text-xs text-slate-500 hover:text-teal-600" href="#">1.2 Health and Extreme Weather</a>
-                <a className="block text-xs text-slate-500 hover:text-teal-600" href="#">1.3 Infectious Disease</a>
-                <a className="block text-xs text-slate-500 hover:text-teal-600" href="#">1.4 Food Security</a>
+                <span className="block text-xs font-bold text-teal-700">1.1 Health and Heat</span>
+                <div className="pl-2 space-y-2">
+                  {sidebarSubItems.map((item) => (
+                    <a
+                      key={item.href}
+                      className="block text-[11px] text-slate-500 hover:text-teal-600 transition-colors"
+                      href={item.href}
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
               </div>
               <button className="w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-100/50 rounded-xl transition-all">
                 <span className="material-symbols-outlined">shield_with_heart</span>

@@ -1,120 +1,91 @@
-import ModuleHeader from '@/components/ModuleHeader';
-import FilterBar from '@/components/FilterBar';
-import ChartArea from '@/components/ChartArea';
-import MetadataBlock from '@/components/MetadataBlock';
-import ActionBar from '@/components/ActionBar';
+import IndicatorSection from '@/components/IndicatorSection';
+import Chart111Attr from '@/components/indicators/Chart111Attr';
+import Chart111Vuln from '@/components/indicators/Chart111Vuln';
+import Chart112 from '@/components/indicators/Chart112';
+import Chart113Pwhl from '@/components/indicators/Chart113Pwhl';
+import Chart113Workers from '@/components/indicators/Chart113Workers';
+import Chart114 from '@/components/indicators/Chart114';
+import Chart115 from '@/components/indicators/Chart115';
+import { indicators } from '@/lib/metadata';
+import { globalData as data111attr } from '@/lib/data/indicator111attr';
+import { globalData as data111vuln } from '@/lib/data/indicator111vuln';
+import { globalData as data112 } from '@/lib/data/indicator112';
+import { globalData as data113pwhl } from '@/lib/data/indicator113pwhl';
+import { globalData as data113workers } from '@/lib/data/indicator113workers';
+import { globalData as data114 } from '@/lib/data/indicator114';
+import { globalData as data115 } from '@/lib/data/indicator115';
 
 export default function Home() {
   return (
     <>
-      {/* ── Indicator header ── */}
+      {/* Page header */}
       <div className="mt-8 mb-12">
         <h1 className="text-5xl xl:text-6xl font-bold font-headline text-primary mb-6 leading-none uppercase">
-          1.1.1 Exposure of Vulnerable Populations to Heatwaves
+          1.1 Heat and Health
         </h1>
-        <div className="max-w-4xl space-y-4">
-          <p className="text-xl text-on-surface font-body leading-relaxed">
-            Exposure to extreme heat has a range of health consequences,
-            including heat-related deaths, cardiovascular and respiratory
-            diseases, kidney failure, mental health conditions, and adverse
-            pregnancy outcomes.
-          </p>
-          <p className="text-sm text-on-surface-variant font-body">
-            The physiological impact of heat is exacerbated by the intensity,
-            duration, and frequency of heatwaves. Vulnerable
-            populations—including infants, the elderly, and those with
-            pre-existing medical conditions—face disproportionate risks as
-            global average temperatures continue to rise.
-          </p>
-        </div>
+        <p className="text-xl text-on-surface font-body leading-relaxed max-w-4xl">
+          These indicators track the health impacts of rising temperatures,
+          including heatwave exposure, labour capacity loss, sleep disruption,
+          and heat-related mortality across vulnerable populations worldwide.
+        </p>
       </div>
 
-      {/* ── Dashboard bento grid ── */}
-      <div className="grid grid-cols-12 gap-6 xl:gap-8 mb-16">
-        {/* Main chart card */}
-        <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-[2.5rem] p-6 xl:p-8 shadow-sm">
-          <ModuleHeader />
-          <FilterBar />
-          <ChartArea />
-        </div>
+      {/* 7 indicator sections */}
+      <IndicatorSection
+        meta={indicators[0]}
+        downloadData={[...data111attr] as Record<string, unknown>[]}
+        downloadFilename="indicator-1.1.1-attributable.csv"
+      >
+        <Chart111Attr />
+      </IndicatorSection>
 
-        {/* Right column — headline + metric */}
-        <div className="col-span-12 lg:col-span-4 flex flex-col space-y-6 xl:space-y-8">
-          {/* Headline finding */}
-          <div className="flex-1 bg-primary text-white rounded-[2.5rem] p-8 relative overflow-hidden">
-            <div className="relative z-10">
-              <h3 className="text-[10px] font-headline tracking-[0.2em] mb-6 opacity-80 uppercase">
-                Key Finding
-              </h3>
-              <p className="text-xl xl:text-2xl font-headline leading-tight italic">
-                &ldquo;In 2024, people older than 65&nbsp;years and infants
-                younger than 1&#8209;year experienced, on average,{' '}
-                <span className="text-on-primary-container font-bold not-italic">
-                  304%
-                </span>{' '}
-                and{' '}
-                <span className="text-on-primary-container font-bold not-italic">
-                  389%
-                </span>{' '}
-                more days of heatwaves compared to the 1986–2005
-                baseline.&rdquo;
-              </p>
-            </div>
-            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-primary-container rounded-full opacity-30 blur-3xl" />
-          </div>
+      <IndicatorSection
+        meta={indicators[1]}
+        downloadData={[...data111vuln] as Record<string, unknown>[]}
+        downloadFilename="indicator-1.1.1-vulnerable.csv"
+      >
+        <Chart111Vuln />
+      </IndicatorSection>
 
-          {/* Key metric */}
-          <div className="bg-surface-container-high rounded-[2.5rem] p-8">
-            <h3 className="text-[10px] font-headline tracking-[0.2em] mb-4 text-on-surface-variant uppercase">
-              Key Metric
-            </h3>
-            <div className="text-5xl font-headline font-bold text-teal-950 mb-2">
-              167%
-            </div>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              Increase in heat-related deaths of people over 65 relative to the
-              1990–2000 base period.
-            </p>
-          </div>
-        </div>
-      </div>
+      <IndicatorSection
+        meta={indicators[2]}
+        downloadData={[...data112] as Record<string, unknown>[]}
+        downloadFilename="indicator-1.1.2-physical-activity.csv"
+      >
+        <Chart112 />
+      </IndicatorSection>
 
-      {/* ── Metadata & actions ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 border-t border-outline-variant/15 pt-12 mb-12">
-        <MetadataBlock />
-        <div className="bg-surface-container-low rounded-3xl p-8">
-          <h4 className="text-sm font-headline font-bold text-primary tracking-widest mb-6 uppercase">
-            Technical Metadata
-          </h4>
-          <div className="space-y-6">
-            <div>
-              <span className="text-[10px] font-headline text-slate-400 block mb-1 uppercase">
-                Indicator Authors
-              </span>
-              <p className="text-xs font-bold text-on-surface">
-                Dr. Andrew&nbsp;J Pershing, Dr. Marina Romanello, Dr. Claudia di
-                Napoli, et&nbsp;al.
-              </p>
-            </div>
-            <div>
-              <span className="text-[10px] font-headline text-slate-400 block mb-1 uppercase">
-                Data Sources
-              </span>
-              <ul className="text-xs space-y-1 font-medium text-teal-900">
-                <li>• ERA5 Climate Reanalysis (ECMWF)</li>
-                <li>• WorldPop Age/Sex Structure (2024 revision)</li>
-                <li>• Lancet Countdown Attribution Framework</li>
-              </ul>
-            </div>
-            <div>
-              <span className="text-[10px] font-headline text-slate-400 block mb-3 uppercase">
-                Data Download
-              </span>
-              <ActionBar />
-            </div>
-          </div>
-        </div>
-      </div>
+      <IndicatorSection
+        meta={indicators[3]}
+        downloadData={[...data113pwhl] as Record<string, unknown>[]}
+        downloadFilename="indicator-1.1.3-labour-capacity.csv"
+      >
+        <Chart113Pwhl />
+      </IndicatorSection>
+
+      <IndicatorSection
+        meta={indicators[4]}
+        downloadData={[...data113workers] as Record<string, unknown>[]}
+        downloadFilename="indicator-1.1.3-outdoor-workers.csv"
+      >
+        <Chart113Workers />
+      </IndicatorSection>
+
+      <IndicatorSection
+        meta={indicators[5]}
+        downloadData={[...data114] as Record<string, unknown>[]}
+        downloadFilename="indicator-1.1.4-sleep-loss.csv"
+      >
+        <Chart114 />
+      </IndicatorSection>
+
+      <IndicatorSection
+        meta={indicators[6]}
+        downloadData={[...data115] as Record<string, unknown>[]}
+        downloadFilename="indicator-1.1.5-heat-mortality.csv"
+      >
+        <Chart115 />
+      </IndicatorSection>
     </>
   );
 }
