@@ -12,6 +12,7 @@ import { globalData, whoData, hdiData } from '@/lib/data/indicator113pwhl';
 import EntityPicker, { type EntityCategory } from '@/components/EntityPicker';
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
+import DualAxisLegend, { DUAL_AXIS } from '@/components/DualAxisLegend';
 
 const SECTORS: { raw: string; label: string; color: string }[] = [
   { raw: 'WHL200Serv', label: 'Services', color: '#259AD4' },
@@ -120,6 +121,20 @@ export default function Chart113PWHL() {
         </div>
       </div>
 
+      <DualAxisLegend
+        dark
+        left={{
+          title: 'Hours lost (millions)',
+          subtitle: 'Stacked areas by sector — read against the left scale.',
+          color: DUAL_AXIS.leftMintOnDark,
+        }}
+        right={{
+          title: 'Hours per worker',
+          subtitle: 'Yellow line — potential work hours lost per worker (right scale).',
+          color: DUAL_AXIS.rightAmber,
+        }}
+      />
+
       <div className="h-[420px] relative">
         <ParentSize>
           {({ width, height }) => {
@@ -167,7 +182,9 @@ interface InnerProps {
 }
 
 function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale, data, activeKeys, baselinePP, years, buildTooltip, dark }: InnerProps) {
-  const axisTickFill = dark ? 'rgba(255,255,255,0.72)' : '#40484e';
+  const axisBottomTickFill = dark ? 'rgba(255,255,255,0.72)' : '#40484e';
+  const leftAxisStroke = dark ? DUAL_AXIS.leftMintOnDark : DUAL_AXIS.leftTeal;
+  const leftTickFill = dark ? '#ccfbf1' : '#115e59';
   const stableBuild = useCallback(buildTooltip, [buildTooltip]);
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
     useChartHover({ xScale, years, margin, buildTooltip: stableBuild });
@@ -183,7 +200,7 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
     <>
       <svg width={width} height={height}>
         <Group left={margin.left} top={margin.top}>
-          <GridRows scale={yScale} width={innerW} stroke="#bfc7cf" strokeOpacity={0.3} />
+          <GridRows scale={yScale} width={innerW} stroke={leftAxisStroke} strokeOpacity={dark ? 0.25 : 0.2} />
 
           {/* 1990-99 baseline */}
           <rect x={xScale(1990)} y={0} width={xScale(1999) - xScale(1990)} height={innerH} fill={PER_WORKER_REF_BAND} />
@@ -217,18 +234,28 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
             <line x1={0} x2={innerW} y1={yRightScale(baselinePP)} y2={yRightScale(baselinePP)} stroke={PER_WORKER_REF_LINE} strokeWidth={1} strokeDasharray="4,4" />
           )}
 
-          <AxisBottom top={innerH} scale={xScale} stroke="#bfc7cf" tickStroke="#bfc7cf" numTicks={8}
-            tickLabelProps={() => ({ fill: axisTickFill, fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle' as const })}
+          <AxisBottom
+            top={innerH}
+            scale={xScale}
+            stroke={dark ? 'rgba(255,255,255,0.35)' : '#bfc7cf'}
+            tickStroke={dark ? 'rgba(255,255,255,0.35)' : '#bfc7cf'}
+            numTicks={8}
+            tickLabelProps={() => ({
+              fill: dark ? axisBottomTickFill : '#40484e',
+              fontSize: 11,
+              fontFamily: "'Open Sans', sans-serif",
+              textAnchor: 'middle' as const,
+            })}
             tickFormat={(v) => String(Math.round(v as number))} />
-          <AxisLeft scale={yScale} stroke="#bfc7cf" tickStroke="#bfc7cf" labelOffset={65}
-            tickLabelProps={() => ({ fill: axisTickFill, fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'end' as const, dy: '0.33em', dx: -4 })}
+          <AxisLeft scale={yScale} stroke={leftAxisStroke} tickStroke={leftAxisStroke} labelOffset={65}
+            tickLabelProps={() => ({ fill: leftTickFill, fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'end' as const, dy: '0.33em', dx: -4 })}
             tickFormat={(v) => fmt(v as number)}
-            label="Millions of hours lost"
-            labelProps={{ fill: axisTickFill, fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
-          <AxisRight left={innerW} scale={yRightScale} stroke="#bfc7cf" tickStroke="#bfc7cf" labelOffset={50}
+            label="Millions of hours (stacked areas)"
+            labelProps={{ fill: leftAxisStroke, fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
+          <AxisRight left={innerW} scale={yRightScale} stroke={PER_WORKER_STROKE} tickStroke={PER_WORKER_STROKE} labelOffset={50}
             tickLabelProps={() => ({ fill: PER_WORKER_STROKE, fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'start' as const, dy: '0.33em', dx: 4 })}
             tickFormat={(v) => fmt(v as number)}
-            label="Hours per worker"
+            label="Hours per worker (line)"
             labelProps={{ fill: PER_WORKER_STROKE, fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
         </Group>
         <Crosshair hoveredYear={hoveredYear} getXForYear={getXForYear} innerHeight={innerH} innerWidth={innerW} margin={margin} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} dotPositions={dotPositions} />

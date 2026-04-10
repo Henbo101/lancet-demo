@@ -13,6 +13,7 @@ import EntityPicker, { buildColorMap, type EntityCategory } from '@/components/E
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { bandEntityCenterX } from '@/lib/chartGeometry';
+import DualAxisLegend, { DUAL_AXIS } from '@/components/DualAxisLegend';
 
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 const fmtK = (v: number) => {
@@ -69,6 +70,19 @@ export default function Chart115() {
       <div className="mb-4">
         <EntityPicker categories={entityCategories} selected={selected} onChange={setSelected} dark={dark} />
       </div>
+
+      <DualAxisLegend
+        left={{
+          title: 'Attributable deaths (AN)',
+          subtitle: 'Bars — absolute mortality; read against the left scale.',
+          color: DUAL_AXIS.leftTeal,
+        }}
+        right={{
+          title: 'Attributable fraction (AF)',
+          subtitle: 'Lines — % of deaths that are heat-attributable; read against the right scale.',
+          color: DUAL_AXIS.rightRose,
+        }}
+      />
 
       <div className="h-[420px] relative">
         <ParentSize>
@@ -146,7 +160,7 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
     <>
       <svg width={width} height={height}>
         <Group left={margin.left} top={margin.top}>
-          <GridRows scale={yScale} width={innerW} stroke="#bfc7cf" strokeOpacity={0.3} />
+          <GridRows scale={yScale} width={innerW} stroke={DUAL_AXIS.leftTeal} strokeOpacity={0.2} />
 
           {/* Decade bands */}
           {DECADE_BANDS.map((band, i) => {
@@ -193,16 +207,16 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
           <AxisBottom top={innerH} scale={xScale} stroke="#bfc7cf" tickStroke="#bfc7cf"
             tickLabelProps={() => ({ fill: '#40484e', fontSize: 10, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle' as const })}
             tickFormat={(v) => String(v)} />
-          <AxisLeft scale={yScale} stroke="#bfc7cf" tickStroke="#bfc7cf" labelOffset={65}
-            tickLabelProps={() => ({ fill: '#40484e', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'end' as const, dy: '0.33em', dx: -4 })}
+          <AxisLeft scale={yScale} stroke={DUAL_AXIS.leftTeal} tickStroke={DUAL_AXIS.leftTeal} labelOffset={65}
+            tickLabelProps={() => ({ fill: '#115e59', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'end' as const, dy: '0.33em', dx: -4 })}
             tickFormat={(v) => fmtK(v as number)}
-            label="Deaths (AN)"
-            labelProps={{ fill: '#004e6f', fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
-          <AxisRight left={innerW} scale={yRightScale} stroke="#bfc7cf" tickStroke="#bfc7cf" labelOffset={50}
-            tickLabelProps={() => ({ fill: '#B5334F', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'start' as const, dy: '0.33em', dx: 4 })}
+            label="Deaths AN (bars)"
+            labelProps={{ fill: DUAL_AXIS.leftTeal, fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
+          <AxisRight left={innerW} scale={yRightScale} stroke={DUAL_AXIS.rightRose} tickStroke={DUAL_AXIS.rightRose} labelOffset={50}
+            tickLabelProps={() => ({ fill: '#9f1239', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'start' as const, dy: '0.33em', dx: 4 })}
             tickFormat={(v) => `${(v as number).toFixed(1)}%`}
-            label="AF %"
-            labelProps={{ fill: '#B5334F', fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
+            label="AF % (lines)"
+            labelProps={{ fill: DUAL_AXIS.rightRose, fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
         </Group>
         <Crosshair hoveredYear={hoveredYear} getXForYear={getXForYear} innerHeight={innerH} innerWidth={innerW} margin={margin} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} dotPositions={dotPositions} />
       </svg>

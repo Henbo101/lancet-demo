@@ -13,6 +13,7 @@ import EntityPicker, { buildColorMap, type EntityCategory } from '@/components/E
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { linearGroupedCenterX } from '@/lib/chartGeometry';
+import DualAxisLegend, { DUAL_AXIS } from '@/components/DualAxisLegend';
 
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 const fmt = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -122,6 +123,19 @@ export default function Chart111Vuln() {
           })}
         </div>
       </div>
+
+      <DualAxisLegend
+        left={{
+          title: 'Avg exposure (days / person)',
+          subtitle: 'Coloured lines — read against the left-hand number scale.',
+          color: DUAL_AXIS.leftTeal,
+        }}
+        right={{
+          title: 'Total person-days',
+          subtitle: 'Pale vertical bars behind the lines — height uses the right-hand scale (billions).',
+          color: DUAL_AXIS.rightDeepTeal,
+        }}
+      />
 
       <div className="h-[420px] relative">
         <ParentSize>
@@ -258,7 +272,7 @@ function ChartInner({
     <>
       <svg width={width} height={height}>
         <Group left={margin.left} top={margin.top}>
-          <GridRows scale={yScale} width={innerW} stroke="#bfc7cf" strokeOpacity={0.3} />
+          <GridRows scale={yScale} width={innerW} stroke={DUAL_AXIS.leftTeal} strokeOpacity={0.18} />
 
           {/* Baseline band 1986-2005 */}
           {baselineX1 != null && baselineX2 != null && (
@@ -362,28 +376,28 @@ function ChartInner({
           />
           <AxisLeft
             scale={yScale}
-            stroke="#bfc7cf"
-            tickStroke="#bfc7cf"
+            stroke={DUAL_AXIS.leftTeal}
+            tickStroke={DUAL_AXIS.leftTeal}
             labelOffset={65}
             tickLabelProps={() => ({
-              fill: '#40484e', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'end' as const, dy: '0.33em', dx: -4,
+              fill: '#115e59', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'end' as const, dy: '0.33em', dx: -4,
             })}
             tickFormat={(v) => fmt(v as number)}
-            label="Avg days per person"
-            labelProps={{ fill: '#004e6f', fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }}
+            label="Avg days / person (lines)"
+            labelProps={{ fill: DUAL_AXIS.leftTeal, fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }}
           />
           <AxisRight
             left={innerW}
             scale={yRightScale}
-            stroke="#bfc7cf"
-            tickStroke="#bfc7cf"
+            stroke={DUAL_AXIS.rightDeepTeal}
+            tickStroke={DUAL_AXIS.rightDeepTeal}
             labelOffset={50}
             tickLabelProps={() => ({
-              fill: '#94a3b8', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'start' as const, dy: '0.33em', dx: 4,
+              fill: '#134e4a', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'start' as const, dy: '0.33em', dx: 4,
             })}
             tickFormat={(v) => fmtB(v as number)}
-            label="Total person-days"
-            labelProps={{ fill: '#94a3b8', fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }}
+            label="Total person-days (bars)"
+            labelProps={{ fill: DUAL_AXIS.rightDeepTeal, fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }}
           />
         </Group>
 

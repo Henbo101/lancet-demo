@@ -13,6 +13,7 @@ import EntityPicker, { buildColorMap, type EntityCategory } from '@/components/E
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { bandEntityCenterX } from '@/lib/chartGeometry';
+import DualAxisLegend, { DUAL_AXIS } from '@/components/DualAxisLegend';
 
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 const fmtM = (v: number) => (v / 1e6).toFixed(1) + 'M';
@@ -69,6 +70,19 @@ export default function Chart113Workers() {
       <div className="mb-4">
         <EntityPicker categories={entityCategories} selected={selected} onChange={setSelected} dark={dark} />
       </div>
+
+      <DualAxisLegend
+        left={{
+          title: 'Outdoor workers (count)',
+          subtitle: 'Bars — absolute number of workers; use the left scale.',
+          color: DUAL_AXIS.leftTeal,
+        }}
+        right={{
+          title: '% of workforce',
+          subtitle: 'Lines — share of the labour force in outdoor work; use the right scale.',
+          color: DUAL_AXIS.rightRose,
+        }}
+      />
 
       <div className="h-[420px] relative">
         <ParentSize>
@@ -146,7 +160,7 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
     <>
       <svg width={width} height={height}>
         <Group left={margin.left} top={margin.top}>
-          <GridRows scale={yScale} width={innerW} stroke="#bfc7cf" strokeOpacity={0.3} />
+          <GridRows scale={yScale} width={innerW} stroke={DUAL_AXIS.leftTeal} strokeOpacity={0.2} />
 
           {/* Bars per entity */}
           {selected.map((entity, ei) => {
@@ -180,16 +194,16 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
           <AxisBottom top={innerH} scale={xScale} stroke="#bfc7cf" tickStroke="#bfc7cf"
             tickLabelProps={() => ({ fill: '#40484e', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle' as const })}
             tickFormat={(v) => String(v)} />
-          <AxisLeft scale={yScale} stroke="#bfc7cf" tickStroke="#bfc7cf" labelOffset={65}
-            tickLabelProps={() => ({ fill: '#40484e', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'end' as const, dy: '0.33em', dx: -4 })}
+          <AxisLeft scale={yScale} stroke={DUAL_AXIS.leftTeal} tickStroke={DUAL_AXIS.leftTeal} labelOffset={65}
+            tickLabelProps={() => ({ fill: '#115e59', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'end' as const, dy: '0.33em', dx: -4 })}
             tickFormat={(v) => fmtM(v as number)}
-            label="Outdoor workers"
-            labelProps={{ fill: '#004e6f', fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
-          <AxisRight left={innerW} scale={yRightScale} stroke="#bfc7cf" tickStroke="#bfc7cf" labelOffset={50}
-            tickLabelProps={() => ({ fill: '#B5334F', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'start' as const, dy: '0.33em', dx: 4 })}
+            label="Outdoor workers (bars)"
+            labelProps={{ fill: DUAL_AXIS.leftTeal, fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
+          <AxisRight left={innerW} scale={yRightScale} stroke={DUAL_AXIS.rightRose} tickStroke={DUAL_AXIS.rightRose} labelOffset={50}
+            tickLabelProps={() => ({ fill: '#9f1239', fontSize: 11, fontFamily: "'Open Sans', sans-serif", textAnchor: 'start' as const, dy: '0.33em', dx: 4 })}
             tickFormat={(v) => `${v}%`}
-            label="% of total workforce"
-            labelProps={{ fill: '#B5334F', fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
+            label="% of workforce (lines)"
+            labelProps={{ fill: DUAL_AXIS.rightRose, fontSize: 12, fontFamily: "'Open Sans', sans-serif", textAnchor: 'middle', fontWeight: 600 }} />
         </Group>
         <Crosshair hoveredYear={hoveredYear} getXForYear={getXForYear} innerHeight={innerH} innerWidth={innerW} margin={margin} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} dotPositions={dotPositions} />
       </svg>

@@ -21,6 +21,7 @@ import {
 } from '@/components/ChartTooltip';
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { bandEntityCenterX } from '@/lib/chartGeometry';
+import DualAxisLegend, { DUAL_AXIS } from '@/components/DualAxisLegend';
 
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 
@@ -125,6 +126,19 @@ export default function Chart111Attr() {
           dark={dark}
         />
       </div>
+
+      <DualAxisLegend
+        left={{
+          title: 'Heatwave days',
+          subtitle: 'Stacked bars — counterfactual (faint) plus attributable (solid), by entity colour.',
+          color: DUAL_AXIS.leftTeal,
+        }}
+        right={{
+          title: '% Attributable',
+          subtitle: 'Lines — share of observed heatwave days linked to climate change.',
+          color: DUAL_AXIS.rightRose,
+        }}
+      />
 
       <div className="h-[420px] relative">
         <ParentSize>
@@ -280,8 +294,8 @@ function ChartInner({
           <GridRows
             scale={yScale}
             width={innerW}
-            stroke="#bfc7cf"
-            strokeOpacity={0.3}
+            stroke={DUAL_AXIS.leftTeal}
+            strokeOpacity={0.2}
           />
 
           {/* Bars per entity */}
@@ -361,11 +375,11 @@ function ChartInner({
 
           <AxisLeft
             scale={yScale}
-            stroke="#bfc7cf"
-            tickStroke="#bfc7cf"
+            stroke={DUAL_AXIS.leftTeal}
+            tickStroke={DUAL_AXIS.leftTeal}
             labelOffset={65}
             tickLabelProps={() => ({
-              fill: '#40484e',
+              fill: '#115e59',
               fontSize: 11,
               fontFamily: "'Open Sans', sans-serif",
               textAnchor: 'end' as const,
@@ -373,9 +387,9 @@ function ChartInner({
               dx: -4,
             })}
             tickFormat={(v) => fmt(v as number)}
-            label="Heatwave Days"
+            label="Heatwave days (bars)"
             labelProps={{
-              fill: '#004e6f',
+              fill: DUAL_AXIS.leftTeal,
               fontSize: 12,
               fontFamily: "'Open Sans', sans-serif",
               textAnchor: 'middle',
@@ -386,10 +400,10 @@ function ChartInner({
           <AxisRight
             left={innerW}
             scale={yRightScale}
-            stroke="#bfc7cf"
-            tickStroke="#bfc7cf"
+            stroke={DUAL_AXIS.rightRose}
+            tickStroke={DUAL_AXIS.rightRose}
             tickLabelProps={() => ({
-              fill: '#B5334F',
+              fill: '#9f1239',
               fontSize: 11,
               fontFamily: "'Open Sans', sans-serif",
               textAnchor: 'start' as const,
@@ -397,10 +411,10 @@ function ChartInner({
               dx: 4,
             })}
             tickFormat={(v) => `${v}%`}
-            label="% Attributable"
+            label="% Attributable (lines)"
             labelOffset={50}
             labelProps={{
-              fill: '#B5334F',
+              fill: DUAL_AXIS.rightRose,
               fontSize: 12,
               fontFamily: "'Open Sans', sans-serif",
               textAnchor: 'middle',
