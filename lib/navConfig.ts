@@ -2,8 +2,42 @@
 export const SIDEBAR_SCROLL_IDS = ['hero', '111attr', '111vuln', '112'] as const;
 export type SidebarScrollId = (typeof SIDEBAR_SCROLL_IDS)[number];
 
-export const sidebarSubItems: { label: string; href: string; sectionId: SidebarScrollId }[] = [
-  { label: '1.1.1 Heatwave Days (Attr.)', href: '#111attr', sectionId: '111attr' },
-  { label: '1.1.1 Heatwave Exposure (Vuln.)', href: '#111vuln', sectionId: '111vuln' },
-  { label: '1.1.2 Heat & Physical Activity', href: '#112', sectionId: '112' },
+export type SidebarNavLink = {
+  label: string;
+  href: string;
+  sectionId: SidebarScrollId;
+};
+
+export type SidebarNavGroup =
+  | {
+      type: 'group';
+      /** Shown above nested links (e.g. 1.1.1 Heatwaves) */
+      heading: string;
+      /** First anchor id for optional “jump to group” behaviour */
+      firstSectionId: SidebarScrollId;
+      items: SidebarNavLink[];
+    }
+  | {
+      type: 'single';
+      item: SidebarNavLink;
+    };
+
+export const sidebarNavStructure: SidebarNavGroup[] = [
+  {
+    type: 'group',
+    heading: '1.1.1 Heatwaves',
+    firstSectionId: '111attr',
+    items: [
+      { label: 'Attributable heatwave days', href: '#111attr', sectionId: '111attr' },
+      { label: 'Vulnerable population exposure', href: '#111vuln', sectionId: '111vuln' },
+    ],
+  },
+  {
+    type: 'single',
+    item: {
+      label: '1.1.2 Heat & physical activity',
+      href: '#112',
+      sectionId: '112',
+    },
+  },
 ];

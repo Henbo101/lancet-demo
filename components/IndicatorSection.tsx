@@ -24,6 +24,8 @@ interface Props {
   /** When set, a Map tab is shown (choropleth or other geography). Omit when data is not spatial. */
   mapView?: React.ReactNode;
   variant?: SectionVariant;
+  /** Set false when a parent page heading already shows the indicator number (e.g. grouped 1.1.1). */
+  showNumberBadge?: boolean;
 }
 
 function toCsv(data: Record<string, unknown>[]): string {
@@ -55,6 +57,7 @@ export default function IndicatorSection({
   children,
   mapView,
   variant = 'immersive',
+  showNumberBadge = true,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [activeView, setActiveView] = useState<ViewMode>('trend');
@@ -89,8 +92,8 @@ export default function IndicatorSection({
   );
 
   const header = (
-    <div className="flex items-start gap-3 mb-2">
-      {badge}
+    <div className={`flex items-start mb-2 ${showNumberBadge ? 'gap-3' : ''}`}>
+      {showNumberBadge ? badge : null}
       <div>
         <h2
           className={`text-2xl xl:text-3xl font-headline font-bold uppercase tracking-tight leading-tight ${

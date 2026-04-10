@@ -32,12 +32,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 1.1.1 Attributable — full-width immersive opener ── */}
+      {/* ── 1.1.1 Heatwaves — groups the two 1.1.1 chart blocks below ── */}
+      <div className="mb-8 w-full max-w-none">
+        <h2 className="font-headline text-lg sm:text-xl font-bold text-teal-950 tracking-tight uppercase border-b border-outline-variant/40 pb-3">
+          <span className="text-primary">1.1.1</span> Heatwaves
+        </h2>
+      </div>
+
+      {/* ── Attributable — full-width immersive opener ── */}
       <IndicatorSection
         meta={indicators[0]}
         downloadData={[...data111attr] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.1-attributable.csv"
         variant="immersive"
+        showNumberBadge={false}
         mapView={<Chart111AttrMap />}
       >
         <Chart111Attr />
@@ -49,6 +57,7 @@ export default function Home() {
         downloadData={[...data111vuln] as Record<string, unknown>[]}
         downloadFilename="indicator-1.1.1-vulnerable.csv"
         variant="splitLeft"
+        showNumberBadge={false}
       >
         <Chart111Vuln />
       </IndicatorSection>

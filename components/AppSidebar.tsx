@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { SIDEBAR_SCROLL_IDS, sidebarSubItems, type SidebarScrollId } from '@/lib/navConfig';
+import { SIDEBAR_SCROLL_IDS, sidebarNavStructure, type SidebarScrollId } from '@/lib/navConfig';
 
 /** Pixels from viewport top; section is “current” once its top crosses this (below fixed header). */
 const SCROLL_ACTIVATION_OFFSET = 132;
@@ -62,21 +62,59 @@ export default function AppSidebar() {
           </span>
         </a>
 
-        <div className="pl-8 py-2 space-y-1">
-          {sidebarSubItems.map((item) => {
-            const on = activeId === item.sectionId;
+        <div className="pl-6 py-2 space-y-3">
+          {sidebarNavStructure.map((block) => {
+            if (block.type === 'single') {
+              const item = block.item;
+              const on = activeId === item.sectionId;
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className={`block rounded-lg px-2.5 py-2.5 text-sm leading-snug transition-colors font-label border-l-[3px] ${
+                    on
+                      ? 'bg-teal-100/90 text-teal-950 border-teal-600 font-semibold shadow-sm ring-1 ring-teal-200/80'
+                      : 'text-slate-600 border-transparent hover:text-teal-700 hover:bg-teal-50/50'
+                  }`}
+                >
+                  {item.label}
+                </a>
+              );
+            }
+
+            const groupActive = block.items.some((i) => i.sectionId === activeId);
+
             return (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`block rounded-lg px-2.5 py-2.5 text-sm leading-snug transition-colors font-label border-l-[3px] ${
-                  on
-                    ? 'bg-teal-100/90 text-teal-950 border-teal-600 font-semibold shadow-sm ring-1 ring-teal-200/80'
-                    : 'text-slate-600 border-transparent hover:text-teal-700 hover:bg-teal-50/50'
-                }`}
-              >
-                {item.label}
-              </a>
+              <div key={block.heading} className="space-y-1">
+                <a
+                  href={`#${block.firstSectionId}`}
+                  className={`block pl-2.5 pr-1 py-1 text-[11px] font-headline font-bold uppercase tracking-[0.12em] leading-tight border-l-[3px] transition-colors ${
+                    groupActive
+                      ? 'text-teal-800 border-teal-500'
+                      : 'text-slate-500 border-slate-200 hover:text-teal-700 hover:border-teal-300'
+                  }`}
+                >
+                  {block.heading}
+                </a>
+                <div className="pl-3 space-y-0.5 border-l border-slate-200/80 ml-2">
+                  {block.items.map((item) => {
+                    const on = activeId === item.sectionId;
+                    return (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        className={`block rounded-lg px-2.5 py-2 text-sm leading-snug transition-colors font-label border-l-[3px] -ml-px ${
+                          on
+                            ? 'bg-teal-100/90 text-teal-950 border-teal-600 font-semibold shadow-sm ring-1 ring-teal-200/80'
+                            : 'text-slate-600 border-transparent hover:text-teal-700 hover:bg-teal-50/50'
+                        }`}
+                      >
+                        {item.label}
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </div>
