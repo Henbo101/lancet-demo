@@ -15,7 +15,7 @@ const SERIES = [
   { key: 'exposure_average_infants', label: 'Infants (<1 yr)', color: COLORS[0] },
   { key: 'exposure_average_65', label: 'Over 65', color: COLORS[1] },
 ];
-const margin = { top: 20, right: 30, bottom: 40, left: 65 };
+const margin = { top: 20, right: 30, bottom: 40, left: 85 };
 const fmt = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
 
 export default function Chart111Vuln() {

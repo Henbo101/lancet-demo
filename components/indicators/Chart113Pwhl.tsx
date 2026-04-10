@@ -20,7 +20,7 @@ const ALL_KEYS = SECTORS.map((s) => s.label);
 const colorMap: Record<string, string> = Object.fromEntries(
   SECTORS.map((s) => [s.label, s.color]),
 );
-const margin = { top: 20, right: 30, bottom: 40, left: 80 };
+const margin = { top: 20, right: 30, bottom: 40, left: 90 };
 const fmt = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
 
 interface StackDatum {

@@ -16,7 +16,7 @@ const LEVELS = [
   { key: 'high', label: 'High', color: COLORS[1] },
   { key: 'extreme', label: 'Extreme', color: COLORS[2] },
 ];
-const margin = { top: 20, right: 30, bottom: 40, left: 70 };
+const margin = { top: 20, right: 30, bottom: 40, left: 85 };
 const fmt = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
 
 function fieldName(level: string, cls: 1 | 3) {

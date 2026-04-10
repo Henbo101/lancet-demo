@@ -9,7 +9,7 @@ import { GridRows } from '@visx/grid';
 import { scaleLinear, scaleBand } from '@visx/scale';
 import { globalData, countryData } from '@/lib/data/indicator111attr';
 
-const margin = { top: 20, right: 20, bottom: 40, left: 65 };
+const margin = { top: 20, right: 20, bottom: 40, left: 80 };
 const fmt = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
 
 export default function Chart111Attr() {

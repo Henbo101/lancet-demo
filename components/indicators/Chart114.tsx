@@ -11,7 +11,7 @@ import { curveMonotoneX } from '@visx/curve';
 import { globalData } from '@/lib/data/indicator114';
 
 const COLOR = '#004e6f';
-const margin = { top: 20, right: 20, bottom: 40, left: 60 };
+const margin = { top: 20, right: 20, bottom: 40, left: 80 };
 const fmt = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
 
 export default function Chart114() {

@@ -25,7 +25,7 @@ const COLORS = [
   '#1ABC9C',
   '#E74C3C',
 ];
-const margin = { top: 20, right: 30, bottom: 40, left: 75 };
+const margin = { top: 20, right: 30, bottom: 40, left: 90 };
 const fmt = (v: number) =>
   v.toLocaleString(undefined, { maximumFractionDigits: 1 });
 

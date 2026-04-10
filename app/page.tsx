@@ -18,19 +18,28 @@ import { globalData as data115 } from '@/lib/data/indicator115';
 export default function Home() {
   return (
     <>
-      {/* Page header */}
-      <div className="mt-8 mb-12">
-        <h1 className="text-5xl xl:text-6xl font-bold font-headline text-primary mb-6 leading-none uppercase">
-          1.1 Heat and Health
-        </h1>
-        <p className="text-xl text-on-surface font-body leading-relaxed max-w-4xl">
-          These indicators track the health impacts of rising temperatures,
-          including heatwave exposure, labour capacity loss, sleep disruption,
-          and heat-related mortality across vulnerable populations worldwide.
-        </p>
-      </div>
+      {/* ── Hero section ── */}
+      <section id="hero" className="mt-8 mb-16 scroll-mt-24">
+        <div className="bg-surface-container-low rounded-[2.5rem] p-8 xl:p-12">
+          <div className="inline-block bg-primary/10 text-primary text-xs font-headline font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-8">
+            Indicator 1.1
+          </div>
 
-      {/* 7 indicator sections */}
+          <h1 className="font-headline font-bold text-primary uppercase leading-[0.9] mb-8">
+            <span className="text-6xl xl:text-8xl block">Heat &amp;</span>
+            <span className="text-6xl xl:text-8xl block text-primary/50">Human</span>
+            <span className="text-6xl xl:text-8xl block text-primary/50">Health</span>
+          </h1>
+
+          <p className="text-xl xl:text-2xl text-on-surface-variant font-body leading-relaxed max-w-2xl">
+            Tracking the surging impact of rising global temperatures on
+            vulnerable populations. Our 2026 data reveals unprecedented shifts
+            in mortality and labour capacity.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Indicator sections ── */}
       <IndicatorSection
         meta={indicators[0]}
         downloadData={[...data111attr] as Record<string, unknown>[]}
