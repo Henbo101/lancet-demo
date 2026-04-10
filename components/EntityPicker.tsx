@@ -24,6 +24,8 @@ interface Props {
   onChange: (entities: string[]) => void;
   maxSelections?: number;
   dark?: boolean;
+  /** Swatch colours for selected entities (e.g. left-axis teal ramp). Merges over default ENTITY_COLORS. */
+  entityColors?: Record<string, string>;
 }
 
 export function getEntityColor(entity: string, selected: string[]): string {
@@ -50,6 +52,7 @@ export default function EntityPicker({
   onChange,
   maxSelections = 8,
   dark = false,
+  entityColors,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -71,7 +74,15 @@ export default function EntityPicker({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const colorMap = useMemo(() => buildColorMap(selected), [selected]);
+  const colorMap = useMemo(() => {
+    const base = buildColorMap(selected);
+    if (!entityColors) return base;
+    const m = { ...base };
+    for (const s of selected) {
+      if (entityColors[s]) m[s] = entityColors[s];
+    }
+    return m;
+  }, [selected, entityColors]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();

@@ -10,6 +10,7 @@ import { scaleLinear } from '@visx/scale';
 import { curveMonotoneX } from '@visx/curve';
 import { globalData, whoData, hdiData, lcData } from '@/lib/data/indicator112';
 import EntityPicker, { type EntityCategory } from '@/components/EntityPicker';
+import { axisColorsForEntities } from '@/lib/dualAxisPalettes';
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
 
@@ -88,6 +89,8 @@ export default function Chart112() {
     return sum / baselineYears.length;
   }, [baselineYears, almField]);
 
+  const pickerEntityColors = useMemo(() => axisColorsForEntities(selected).left, [selected]);
+
   return (
     <>
       <div className="flex flex-wrap items-center gap-4 mb-4">
@@ -100,6 +103,7 @@ export default function Chart112() {
           }}
           maxSelections={1}
           dark={dark}
+          entityColors={pickerEntityColors}
         />
         <div className="flex items-center gap-2 ml-auto">
           {([1, 3] as const).map((c) => (

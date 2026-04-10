@@ -9,11 +9,12 @@ import { GridRows } from '@visx/grid';
 import { scaleLinear, scaleBand } from '@visx/scale';
 import { curveMonotoneX } from '@visx/curve';
 import { globalData, whoData, lcData, hdiData } from '@/lib/data/indicator113workers';
-import EntityPicker, { buildColorMap, type EntityCategory } from '@/components/EntityPicker';
+import EntityPicker, { type EntityCategory } from '@/components/EntityPicker';
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { bandEntityCenterX } from '@/lib/chartGeometry';
 import DualAxisLegend, { DUAL_AXIS } from '@/components/DualAxisLegend';
+import { axisColorsForEntities } from '@/lib/dualAxisPalettes';
 
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 const fmtM = (v: number) => (v / 1e6).toFixed(1) + 'M';
@@ -52,7 +53,10 @@ function getDataForEntity(entity: string): Row[] {
 export default function Chart113Workers() {
   const { dark } = useChartTheme();
   const [selected, setSelected] = useState<string[]>(['Global']);
-  const colorMap = useMemo(() => buildColorMap(selected), [selected]);
+  const { left: leftColorMap, right: rightColorMap } = useMemo(
+    () => axisColorsForEntities(selected),
+    [selected],
+  );
 
   const allData = useMemo(() => {
     const map = new Map<string, Row[]>();
@@ -68,7 +72,13 @@ export default function Chart113Workers() {
   return (
     <>
       <div className="mb-4">
-        <EntityPicker categories={entityCategories} selected={selected} onChange={setSelected} dark={dark} />
+        <EntityPicker
+          categories={entityCategories}
+          selected={selected}
+          onChange={setSelected}
+          dark={dark}
+          entityColors={leftColorMap}
+        />
       </div>
 
       <DualAxisLegend
@@ -107,17 +117,35 @@ export default function Chart113Workers() {
               const rows = selected.flatMap((entity) => {
                 const d = allData.get(entity)?.find((r) => r.Year === year);
                 if (!d) return [];
-                const color = colorMap[entity];
                 const prefix = entityCount > 1 ? `${entity}: ` : '';
                 return [
-                  { color, label: `${prefix}Workers`, value: fmtM(d.workers) },
-                  { color, label: `${prefix}% of workforce`, value: fmtPct(d.pct) },
+                  { color: leftColorMap[entity], label: `${prefix}Workers`, value: fmtM(d.workers) },
+                  { color: rightColorMap[entity], label: `${prefix}% of workforce`, value: fmtPct(d.pct) },
                 ];
               });
               return { year, rows };
             };
 
-            return <ChartInner width={width} height={height} innerW={innerW} innerH={innerH} xScale={xScale} yScale={yScale} yRightScale={yRightScale} allData={allData} selected={selected} colorMap={colorMap} years={years} barW={barW} entityCount={entityCount} buildTooltip={buildTooltip} dark={dark} />;
+            return (
+              <ChartInner
+                width={width}
+                height={height}
+                innerW={innerW}
+                innerH={innerH}
+                xScale={xScale}
+                yScale={yScale}
+                yRightScale={yRightScale}
+                allData={allData}
+                selected={selected}
+                leftColorMap={leftColorMap}
+                rightColorMap={rightColorMap}
+                years={years}
+                barW={barW}
+                entityCount={entityCount}
+                buildTooltip={buildTooltip}
+                dark={dark}
+              />
+            );
           }}
         </ParentSize>
       </div>
@@ -131,13 +159,32 @@ interface InnerProps {
   yScale: ReturnType<typeof scaleLinear<number>>;
   yRightScale: ReturnType<typeof scaleLinear<number>>;
   allData: Map<string, Row[]>;
-  selected: string[]; colorMap: Record<string, string>;
+  selected: string[];
+  leftColorMap: Record<string, string>;
+  rightColorMap: Record<string, string>;
   years: number[]; barW: number; entityCount: number;
   buildTooltip: (year: number) => TooltipPayload;
   dark: boolean;
 }
 
-function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale, allData, selected, colorMap, years, barW, entityCount, buildTooltip, dark }: InnerProps) {
+function ChartInner({
+  width,
+  height,
+  innerW,
+  innerH,
+  xScale,
+  yScale,
+  yRightScale,
+  allData,
+  selected,
+  leftColorMap,
+  rightColorMap,
+  years,
+  barW,
+  entityCount,
+  buildTooltip,
+  dark,
+}: InnerProps) {
   const gap = 2;
   const stableBuild = useCallback(buildTooltip, [buildTooltip]);
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
@@ -151,10 +198,10 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
       return [{
         x: bandEntityCenterX(hoveredYear, ei, entityCount, xScale, barW, gap),
         y: yRightScale(d.pct),
-        color: colorMap[entity],
+        color: rightColorMap[entity],
       }];
     });
-  }, [hoveredYear, selected, allData, yRightScale, colorMap, entityCount, xScale, barW]);
+  }, [hoveredYear, selected, allData, yRightScale, rightColorMap, entityCount, xScale, barW]);
 
   return (
     <>
@@ -165,26 +212,26 @@ function ChartInner({ width, height, innerW, innerH, xScale, yScale, yRightScale
           {/* Bars per entity */}
           {selected.map((entity, ei) => {
             const rows = allData.get(entity) ?? [];
-            const color = colorMap[entity];
+            const barFill = leftColorMap[entity];
             return rows.map((d) => {
               const baseX = xScale(d.Year) ?? 0;
               const x = entityCount > 1 ? baseX + ei * (barW + 2) : baseX;
               const barH = innerH - (yScale(d.workers) ?? 0);
-              return <Bar key={`${entity}-${d.Year}`} x={x} y={yScale(d.workers) ?? 0} width={barW} height={barH} fill={color} fillOpacity={0.65} rx={2} />;
+              return <Bar key={`${entity}-${d.Year}`} x={x} y={yScale(d.workers) ?? 0} width={barW} height={barH} fill={barFill} fillOpacity={0.75} rx={2} />;
             });
           })}
 
           {/* % lines per entity (right axis) */}
           {selected.map((entity, ei) => {
             const rows = allData.get(entity) ?? [];
-            const color = colorMap[entity];
+            const lineStroke = rightColorMap[entity];
             return (
               <LinePath
                 key={`line-${entity}`}
                 data={rows}
                 x={(d) => bandEntityCenterX(d.Year, ei, entityCount, xScale, barW, gap)}
                 y={(d) => yRightScale(d.pct) ?? 0}
-                stroke={color}
+                stroke={lineStroke}
                 strokeWidth={2.5}
                 curve={curveMonotoneX}
               />

@@ -8,9 +8,10 @@ import { AxisBottom, AxisLeft, AxisRight } from '@visx/axis';
 import { GridRows } from '@visx/grid';
 import { scaleLinear, scaleBand } from '@visx/scale';
 import { curveMonotoneX } from '@visx/curve';
+import { interpolateRgb } from 'd3-interpolate';
 import { globalData, countryData } from '@/lib/data/indicator111attr';
+import { axisColorsForEntities } from '@/lib/dualAxisPalettes';
 import EntityPicker, {
-  buildColorMap,
   type EntityCategory,
 } from '@/components/EntityPicker';
 import {
@@ -101,7 +102,10 @@ export default function Chart111Attr() {
   const { dark } = useChartTheme();
   const [selected, setSelected] = useState<string[]>(['Global']);
 
-  const colorMap = useMemo(() => buildColorMap(selected), [selected]);
+  const { left: leftColorMap, right: rightColorMap } = useMemo(
+    () => axisColorsForEntities(selected),
+    [selected],
+  );
 
   const allData = useMemo(() => {
     const map = new Map<string, Row[]>();
@@ -124,6 +128,7 @@ export default function Chart111Attr() {
           selected={selected}
           onChange={setSelected}
           dark={dark}
+          entityColors={leftColorMap}
         />
       </div>
 
@@ -189,13 +194,19 @@ export default function Chart111Attr() {
                 const d = allData.get(entity)?.find((r) => r.Year === year);
                 if (!d) return [];
                 const pctVal = d.Observed > 0 ? (d.Attributable_to_CC / d.Observed) * 100 : 0;
-                const color = colorMap[entity];
+                const lc = leftColorMap[entity];
+                const rc = rightColorMap[entity];
                 const prefix = entityCount > 1 ? `${entity}: ` : '';
                 return [
-                  { color, label: `${prefix}Observed`, value: fmt(d.Observed), group: entity },
-                  { color: '#86cffe', label: `${prefix}Counterfactual`, value: fmt(d.Counterfactual), group: entity },
-                  { color, label: `${prefix}Attributable`, value: fmt(d.Attributable_to_CC), group: entity },
-                  { color, label: `${prefix}% Attributable`, value: pct(pctVal), group: entity },
+                  { color: lc, label: `${prefix}Observed`, value: fmt(d.Observed), group: entity },
+                  {
+                    color: interpolateRgb('#ffffff', lc)(0.35),
+                    label: `${prefix}Counterfactual`,
+                    value: fmt(d.Counterfactual),
+                    group: entity,
+                  },
+                  { color: lc, label: `${prefix}Attributable`, value: fmt(d.Attributable_to_CC), group: entity },
+                  { color: rc, label: `${prefix}% Attributable`, value: pct(pctVal), group: entity },
                 ];
               });
               return { year, rows };
@@ -212,7 +223,8 @@ export default function Chart111Attr() {
                 yRightScale={yRightScale}
                 allData={allData}
                 selected={selected}
-                colorMap={colorMap}
+                leftColorMap={leftColorMap}
+                rightColorMap={rightColorMap}
                 years={years}
                 barWidth={barWidth}
                 entityCount={entityCount}
@@ -237,7 +249,8 @@ interface ChartInnerProps {
   yRightScale: ReturnType<typeof scaleLinear<number>>;
   allData: Map<string, Row[]>;
   selected: string[];
-  colorMap: Record<string, string>;
+  leftColorMap: Record<string, string>;
+  rightColorMap: Record<string, string>;
   years: number[];
   barWidth: number;
   entityCount: number;
@@ -255,7 +268,8 @@ function ChartInner({
   yRightScale,
   allData,
   selected,
-  colorMap,
+  leftColorMap,
+  rightColorMap,
   years,
   barWidth,
   entityCount,
@@ -282,10 +296,10 @@ function ChartInner({
       return [{
         x: bandEntityCenterX(hoveredYear, ei, entityCount, xScale, barWidth, gap),
         y: yRightScale(pctVal),
-        color: colorMap[entity],
+        color: rightColorMap[entity],
       }];
     });
-  }, [hoveredYear, selected, allData, yRightScale, colorMap, entityCount, xScale, barWidth]);
+  }, [hoveredYear, selected, allData, yRightScale, rightColorMap, entityCount, xScale, barWidth]);
 
   return (
     <>
@@ -301,7 +315,7 @@ function ChartInner({
           {/* Bars per entity */}
           {selected.map((entity, ei) => {
             const rows = allData.get(entity) ?? [];
-            const color = colorMap[entity];
+            const barColor = leftColorMap[entity];
             return rows.map((d) => {
               const baseX = xScale(d.Year) ?? 0;
               const x = entityCount > 1 ? baseX + ei * (barWidth + 2) : baseX;
@@ -316,7 +330,7 @@ function ChartInner({
                     y={yScale(d.Counterfactual) ?? 0}
                     width={barWidth}
                     height={cfH}
-                    fill={color}
+                    fill={barColor}
                     fillOpacity={0.3}
                     rx={2}
                   />
@@ -325,7 +339,7 @@ function ChartInner({
                     y={yScale(d.Counterfactual + d.Attributable_to_CC) ?? 0}
                     width={barWidth}
                     height={attrH}
-                    fill={color}
+                    fill={barColor}
                     rx={2}
                   />
                 </g>
@@ -342,7 +356,7 @@ function ChartInner({
                 year: d.Year,
                 pct: (d.Attributable_to_CC / d.Observed) * 100,
               }));
-            const color = colorMap[entity];
+            const lineColor = rightColorMap[entity];
             return (
               <g key={`line-${entity}`}>
                 <LinePath
@@ -351,7 +365,7 @@ function ChartInner({
                     bandEntityCenterX(d.year, ei, entityCount, xScale, barWidth, gap)
                   }
                   y={(d) => yRightScale(d.pct)}
-                  stroke={color}
+                  stroke={lineColor}
                   strokeWidth={2.5}
                   curve={curveMonotoneX}
                 />

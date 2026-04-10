@@ -13,12 +13,14 @@ import EntityPicker, { type EntityCategory } from '@/components/EntityPicker';
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
 import DualAxisLegend, { DUAL_AXIS } from '@/components/DualAxisLegend';
+import { axisColorsForEntities } from '@/lib/dualAxisPalettes';
 
+/** Stacked areas = left axis — teal/cyan ramp (distinct sectors, same family as left scale). */
 const SECTORS: { raw: string; label: string; color: string }[] = [
-  { raw: 'WHL200Serv', label: 'Services', color: '#259AD4' },
-  { raw: 'WHL300Manuf', label: 'Manufacturing', color: '#B5334F' },
-  { raw: 'WHL400sunAgr', label: 'Agriculture', color: '#2ECC71' },
-  { raw: 'WHL400sunConstr', label: 'Construction', color: '#E67E22' },
+  { raw: 'WHL200Serv', label: 'Services', color: '#67e8f9' },
+  { raw: 'WHL300Manuf', label: 'Manufacturing', color: '#2dd4bf' },
+  { raw: 'WHL400sunAgr', label: 'Agriculture', color: '#14b8a6' },
+  { raw: 'WHL400sunConstr', label: 'Construction', color: '#0f766e' },
 ];
 const ALL_KEYS = SECTORS.map((s) => s.label);
 const sectorColorMap: Record<string, string> = Object.fromEntries(SECTORS.map((s) => [s.label, s.color]));
@@ -90,6 +92,8 @@ export default function Chart113PWHL() {
     return baselineRows.reduce((s, d) => s + d.TotalSunWHLpp, 0) / baselineRows.length;
   }, [baselineRows]);
 
+  const pickerEntityColors = useMemo(() => axisColorsForEntities(selected).left, [selected]);
+
   return (
     <>
       <div className="flex flex-wrap items-center gap-4 mb-4">
@@ -102,6 +106,7 @@ export default function Chart113PWHL() {
           }}
           maxSelections={1}
           dark={dark}
+          entityColors={pickerEntityColors}
         />
         <div className="flex flex-wrap items-center gap-2 ml-auto">
           {SECTORS.map((s) => {

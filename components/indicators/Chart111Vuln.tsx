@@ -9,10 +9,11 @@ import { GridRows } from '@visx/grid';
 import { scaleLinear } from '@visx/scale';
 import { curveMonotoneX } from '@visx/curve';
 import { globalData, whoData, hdiData, lcData } from '@/lib/data/indicator111vuln';
-import EntityPicker, { buildColorMap, type EntityCategory } from '@/components/EntityPicker';
+import EntityPicker, { type EntityCategory } from '@/components/EntityPicker';
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { linearGroupedCenterX } from '@/lib/chartGeometry';
+import { axisColorsForEntities, LEFT_SERIES_TEAL } from '@/lib/dualAxisPalettes';
 import DualAxisLegend, { DUAL_AXIS } from '@/components/DualAxisLegend';
 
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
@@ -68,7 +69,7 @@ export default function Chart111Vuln() {
     SERIES_DEFS[0].avgKey,
     SERIES_DEFS[1].avgKey,
   ]);
-  const colorMap = useMemo(() => buildColorMap(selected), [selected]);
+  const pickerEntityColors = useMemo(() => axisColorsForEntities(selected).left, [selected]);
 
   const allData = useMemo(() => {
     const map = new Map<string, Row[]>();
@@ -86,10 +87,11 @@ export default function Chart111Vuln() {
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     );
 
+  /** Lines = left axis — teal ramp; distinct from right-axis background bars */
   const seriesColors: Record<string, string> = {
-    [SERIES_DEFS[0].avgKey]: '#004e6f',
-    [SERIES_DEFS[1].avgKey]: '#B5334F',
-    [SERIES_DEFS[2].avgKey]: '#E67E22',
+    [SERIES_DEFS[0].avgKey]: LEFT_SERIES_TEAL[0],
+    [SERIES_DEFS[1].avgKey]: LEFT_SERIES_TEAL[1],
+    [SERIES_DEFS[2].avgKey]: LEFT_SERIES_TEAL[2],
   };
 
   return (
@@ -100,6 +102,7 @@ export default function Chart111Vuln() {
           selected={selected}
           onChange={setSelected}
           dark={dark}
+          entityColors={pickerEntityColors}
         />
         <div className="flex items-center gap-2 ml-auto">
           {SERIES_DEFS.map((s) => {
@@ -281,12 +284,12 @@ function ChartInner({
               y={0}
               width={baselineX2 - baselineX1}
               height={innerH}
-              fill="#004e6f"
-              fillOpacity={0.04}
+              fill={DUAL_AXIS.leftTeal}
+              fillOpacity={0.06}
             />
           )}
           {baselineX1 != null && (
-            <text x={baselineX1 + 4} y={14} fontSize={9} fill="#004e6f" opacity={0.5} fontFamily="'Open Sans', sans-serif">
+            <text x={baselineX1 + 4} y={14} fontSize={9} fill={DUAL_AXIS.leftTeal} opacity={0.55} fontFamily="'Open Sans', sans-serif">
               Baseline 1986–2005
             </text>
           )}
@@ -307,8 +310,8 @@ function ChartInner({
                   y={yRightScale(totalSum) ?? 0}
                   width={barW}
                   height={barH}
-                  fill="#004e6f"
-                  fillOpacity={0.07 + (ei % 3) * 0.02}
+                  fill={DUAL_AXIS.rightDeepTeal}
+                  fillOpacity={0.08 + (ei % 3) * 0.03}
                   rx={1}
                 />
               );
