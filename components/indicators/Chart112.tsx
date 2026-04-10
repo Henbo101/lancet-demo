@@ -13,6 +13,8 @@ import EntityPicker, { type EntityCategory } from '@/components/EntityPicker';
 import { axisColorsForEntities } from '@/lib/dualAxisPalettes';
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { useChartHover, Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
+import YearPlaybackBar from '@/components/YearPlaybackBar';
+import { useYearPlayback } from '@/hooks/useYearPlayback';
 
 /* Stack order: bottom → top (moderate base, then high, extreme cap) */
 const LEVELS = [
@@ -79,6 +81,8 @@ export default function Chart112() {
 
   const years = useMemo(() => data.map((d) => d.Year), [data]);
 
+  const playback = useYearPlayback(years);
+
   const baselineYears = useMemo(
     () => data.filter((d) => d.Year >= 1990 && d.Year <= 1999),
     [data],
@@ -122,6 +126,8 @@ export default function Chart112() {
         </div>
       </div>
 
+      <YearPlaybackBar playback={playback} className="mb-3" />
+
       <div className="h-[420px] relative">
         <ParentSize>
           {({ width, height }) => {
@@ -134,8 +140,10 @@ export default function Chart112() {
               range: [0, innerW],
             });
 
+            const visibleData = data.filter((d) => d.Year <= playback.throughYear);
+
             const maxY = Math.max(
-              ...data.map((d) => fields.reduce((sum, f) => sum + (d[f] ?? 0), 0)),
+              ...visibleData.map((d) => fields.reduce((sum, f) => sum + (d[f] ?? 0), 0)),
               1,
             );
             const yScale = scaleLinear<number>({
@@ -174,12 +182,13 @@ export default function Chart112() {
                 innerH={innerH}
                 xScale={xScale}
                 yScale={yScale}
-                data={data}
+                data={visibleData}
                 fields={fields}
                 colorMap={colorMap}
                 almField={almField}
                 baselineAvg={baselineAvg}
                 years={years}
+                hoverYears={years.filter((y) => y <= playback.throughYear)}
                 buildTooltip={buildTooltip}
                 dark={dark}
               />
@@ -199,14 +208,32 @@ interface InnerProps {
   colorMap: Record<string, string>;
   almField: string; baselineAvg: number | null;
   years: number[];
+  hoverYears: number[];
   buildTooltip: (year: number) => TooltipPayload;
   dark: boolean;
 }
 
-function ChartInner({ width, height, innerW, innerH, xScale, yScale, data, fields, colorMap, almField, baselineAvg, years, buildTooltip, dark }: InnerProps) {
+function ChartInner({
+  width,
+  height,
+  innerW,
+  innerH,
+  xScale,
+  yScale,
+  data,
+  fields,
+  colorMap,
+  almField,
+  baselineAvg,
+  years,
+  hoverYears,
+  buildTooltip,
+  dark,
+}: InnerProps) {
   const stableBuild = useCallback(buildTooltip, [buildTooltip]);
+  const hy = hoverYears.length > 0 ? hoverYears : years;
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
-    useChartHover({ xScale, years, margin, buildTooltip: stableBuild });
+    useChartHover({ xScale, years: hy, margin, buildTooltip: stableBuild });
 
   const dotPositions = useMemo(() => {
     if (hoveredYear == null) return [];

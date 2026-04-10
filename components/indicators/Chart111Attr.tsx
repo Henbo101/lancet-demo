@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { ParentSize } from '@visx/responsive';
 import { Group } from '@visx/group';
 import { Bar, LinePath } from '@visx/shape';
@@ -23,6 +23,9 @@ import {
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { bandEntityCenterX } from '@/lib/chartGeometry';
 import DualAxisLegend, { DUAL_AXIS } from '@/components/DualAxisLegend';
+import YearPlaybackBar from '@/components/YearPlaybackBar';
+import { useYearPlayback } from '@/hooks/useYearPlayback';
+import { setIndicator111AttrPlaybackYear } from '@/lib/indicator111attrPlaybackBridge';
 
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 
@@ -120,6 +123,12 @@ export default function Chart111Attr() {
     [allData],
   );
 
+  const playback = useYearPlayback(years);
+
+  useEffect(() => {
+    setIndicator111AttrPlaybackYear(playback.throughYear);
+  }, [playback.throughYear]);
+
   return (
     <>
       <div className="mb-4">
@@ -144,6 +153,8 @@ export default function Chart111Attr() {
           color: DUAL_AXIS.rightRose,
         }}
       />
+
+      <YearPlaybackBar playback={playback} className="mb-3" />
 
       <div className="h-[420px] relative">
         <ParentSize>
@@ -226,6 +237,7 @@ export default function Chart111Attr() {
                 leftColorMap={leftColorMap}
                 rightColorMap={rightColorMap}
                 years={years}
+                throughYear={playback.throughYear}
                 barWidth={barWidth}
                 entityCount={entityCount}
                 buildTooltip={buildTooltip}
@@ -252,6 +264,7 @@ interface ChartInnerProps {
   leftColorMap: Record<string, string>;
   rightColorMap: Record<string, string>;
   years: number[];
+  throughYear: number;
   barWidth: number;
   entityCount: number;
   buildTooltip: (year: number) => TooltipPayload;
@@ -271,6 +284,7 @@ function ChartInner({
   leftColorMap,
   rightColorMap,
   years,
+  throughYear,
   barWidth,
   entityCount,
   buildTooltip,
@@ -279,10 +293,15 @@ function ChartInner({
   const stableBuildTooltip = useCallback(buildTooltip, [buildTooltip]);
   const gap = 2;
 
+  const hoverYears = useMemo(
+    () => years.filter((y) => y <= throughYear),
+    [years, throughYear],
+  );
+
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
     useChartHover({
       xScale,
-      years,
+      years: hoverYears.length > 0 ? hoverYears : years,
       margin,
       buildTooltip: stableBuildTooltip,
     });
@@ -314,7 +333,7 @@ function ChartInner({
 
           {/* Bars per entity */}
           {selected.map((entity, ei) => {
-            const rows = allData.get(entity) ?? [];
+            const rows = (allData.get(entity) ?? []).filter((d) => d.Year <= throughYear);
             const barColor = leftColorMap[entity];
             return rows.map((d) => {
               const baseX = xScale(d.Year) ?? 0;
@@ -351,7 +370,7 @@ function ChartInner({
           {selected.map((entity, ei) => {
             const rows = allData.get(entity) ?? [];
             const lineData = rows
-              .filter((d) => d.Observed > 0)
+              .filter((d) => d.Year <= throughYear && d.Observed > 0)
               .map((d) => ({
                 year: d.Year,
                 pct: (d.Attributable_to_CC / d.Observed) * 100,

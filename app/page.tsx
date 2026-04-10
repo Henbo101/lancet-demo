@@ -10,13 +10,15 @@ import { globalData as data112 } from '@/lib/data/indicator112';
 
 function SubsectionHead({ number, title }: { number: string; title: string }) {
   return (
-    <div className="mb-8 w-full max-w-none">
-      <div className="inline-block bg-primary/10 text-primary text-xs font-headline font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-3">
-        {number}
+    <div className="mb-6 w-full max-w-none border-b border-outline-variant/40 pb-2.5">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <span className="inline-flex shrink-0 bg-primary/10 text-primary text-xs font-headline font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+          {number}
+        </span>
+        <h2 className="font-headline text-base sm:text-lg font-bold text-teal-950 tracking-tight uppercase min-w-0 leading-snug">
+          {title}
+        </h2>
       </div>
-      <h2 className="font-headline text-lg sm:text-xl font-bold text-teal-950 tracking-tight uppercase border-b border-outline-variant/40 pb-3">
-        {title}
-      </h2>
     </div>
   );
 }

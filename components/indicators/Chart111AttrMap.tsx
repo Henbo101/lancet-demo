@@ -1,8 +1,17 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useSyncExternalStore } from 'react';
 import { countryData } from '@/lib/data/indicator111attr';
 import WorldChoroplethMap from '@/components/WorldChoroplethMap';
+import {
+  getIndicator111AttrPlaybackYear,
+  subscribeIndicator111AttrPlayback,
+} from '@/lib/indicator111attrPlaybackBridge';
+
+function nearestYear(target: number, years: number[]): number {
+  if (years.length === 0) return target;
+  return years.reduce((best, y) => (Math.abs(y - target) < Math.abs(best - target) ? y : best), years[0]);
+}
 
 export default function Chart111AttrMap() {
   const years = useMemo(() => {
@@ -11,12 +20,22 @@ export default function Chart111AttrMap() {
     return [...y].sort((a, b) => a - b);
   }, []);
 
-  const [year, setYear] = useState(() => years[years.length - 1] ?? 2024);
+  const bridged = useSyncExternalStore(
+    subscribeIndicator111AttrPlayback,
+    getIndicator111AttrPlaybackYear,
+    getIndicator111AttrPlaybackYear,
+  );
+
+  const [manualYear, setManualYear] = useState(() => years[years.length - 1] ?? 2024);
+
+  useEffect(() => {
+    if (bridged != null) setManualYear(nearestYear(bridged, years));
+  }, [bridged, years]);
 
   const iso3ToValue = useMemo(() => {
     const m: Record<string, number> = {};
     for (const d of countryData) {
-      if (d.Year !== year) continue;
+      if (d.Year !== manualYear) continue;
       const obs = d.Observed as number;
       const attr = d.Attributable_to_CC as number;
       if (obs <= 0) continue;
@@ -25,7 +44,7 @@ export default function Chart111AttrMap() {
       m[iso] = (attr / obs) * 100;
     }
     return m;
-  }, [year]);
+  }, [manualYear]);
 
   return (
     <div>
@@ -34,8 +53,8 @@ export default function Chart111AttrMap() {
           Year
           <select
             className="rounded-xl border border-outline-variant/40 bg-white px-3 py-2 text-sm font-body text-teal-950 shadow-sm"
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
+            value={manualYear}
+            onChange={(e) => setManualYear(Number(e.target.value))}
           >
             {years.map((y) => (
               <option key={y} value={y}>
@@ -45,7 +64,8 @@ export default function Chart111AttrMap() {
           </select>
         </label>
         <p className="text-xs text-on-surface-variant max-w-xl pb-1">
-          Share of observed heatwave days attributable to climate change (matches &ldquo;% Attributable&rdquo; in Trend).
+          Map updates when you use year playback on the Trend view. You can still pick a year here; playback on Trend
+          will update this selector while the indicator is visible.
         </p>
       </div>
       <WorldChoroplethMap

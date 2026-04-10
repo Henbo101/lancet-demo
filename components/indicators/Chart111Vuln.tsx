@@ -15,6 +15,8 @@ import { useChartTheme } from '@/components/ChartThemeContext';
 import { linearGroupedCenterX } from '@/lib/chartGeometry';
 import { axisColorsForEntities, LEFT_SERIES_TEAL } from '@/lib/dualAxisPalettes';
 import DualAxisLegend, { DUAL_AXIS } from '@/components/DualAxisLegend';
+import YearPlaybackBar from '@/components/YearPlaybackBar';
+import { useYearPlayback } from '@/hooks/useYearPlayback';
 
 const margin = { top: 24, right: 80, bottom: 40, left: 100 };
 const fmt = (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -82,6 +84,8 @@ export default function Chart111Vuln() {
     [allData],
   );
 
+  const playback = useYearPlayback(years);
+
   const toggleSeries = (key: string) =>
     setActiveSeries((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
@@ -139,6 +143,8 @@ export default function Chart111Vuln() {
           color: DUAL_AXIS.rightDeepTeal,
         }}
       />
+
+      <YearPlaybackBar playback={playback} className="mb-3" />
 
       <div className="h-[420px] relative">
         <ParentSize>
@@ -203,6 +209,7 @@ export default function Chart111Vuln() {
                 activeSeries={activeSeries}
                 seriesColors={seriesColors}
                 years={years}
+                throughYear={playback.throughYear}
                 buildTooltip={buildTooltip}
                 dark={dark}
               />
@@ -227,6 +234,7 @@ interface InnerProps {
   activeSeries: string[];
   seriesColors: Record<string, string>;
   years: number[];
+  throughYear: number;
   buildTooltip: (year: number) => TooltipPayload;
   dark: boolean;
 }
@@ -244,6 +252,7 @@ function ChartInner({
   activeSeries,
   seriesColors,
   years,
+  throughYear,
   buildTooltip,
   dark,
 }: InnerProps) {
@@ -251,8 +260,18 @@ function ChartInner({
   const nEnt = selected.length;
   const slotWidth = Math.max(5, Math.min(14, 42 / Math.max(nEnt, 1)));
 
+  const hoverYears = useMemo(
+    () => years.filter((y) => y <= throughYear),
+    [years, throughYear],
+  );
+
   const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
-    useChartHover({ xScale, years, margin, buildTooltip: stableBuild });
+    useChartHover({
+      xScale,
+      years: hoverYears.length > 0 ? hoverYears : years,
+      margin,
+      buildTooltip: stableBuild,
+    });
 
   const dotPositions = useMemo(() => {
     if (hoveredYear == null) return [];
@@ -296,7 +315,7 @@ function ChartInner({
 
           {/* Total person-days bars (right axis) — one grouped bar per entity per year */}
           {selected.map((entity, ei) => {
-            const rows = allData.get(entity) ?? [];
+            const rows = (allData.get(entity) ?? []).filter((d) => d.Year <= throughYear);
             const activeTotalKeys = activeSeries.map((k) => k.replace('average', 'total'));
             const barW = Math.max(2, slotWidth - 1);
             return rows.map((d) => {
@@ -320,7 +339,7 @@ function ChartInner({
 
           {/* Lines per entity per active series */}
           {selected.map((entity, ei) => {
-            const rows = allData.get(entity) ?? [];
+            const rows = (allData.get(entity) ?? []).filter((d) => d.Year <= throughYear);
             return activeSeries.map((k) => (
               <LinePath
                 key={`${entity}-${k}`}
@@ -336,7 +355,8 @@ function ChartInner({
           })}
 
           {/* 2024 endpoint annotations for primary entity */}
-          {(() => {
+          {throughYear >= 2024 &&
+            (() => {
             const rows = allData.get(selected[0]) ?? [];
             const last = rows.find((d) => d.Year === 2024);
             if (!last) return null;
