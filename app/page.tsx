@@ -25,10 +25,10 @@ export default function Home() {
             Indicator 1.1
           </div>
 
-          <h1 className="w-full max-w-none font-headline font-bold text-primary uppercase leading-[0.9] mb-8">
-            <span className="text-6xl xl:text-8xl block w-full max-w-none">Heat &amp;</span>
-            <span className="text-6xl xl:text-8xl block w-full max-w-none text-primary/50">Human</span>
-            <span className="text-6xl xl:text-8xl block w-full max-w-none text-primary/50">Health</span>
+          <h1 className="w-full max-w-none font-headline font-bold uppercase leading-[0.95] tracking-tight mb-8 text-4xl min-[480px]:text-5xl sm:text-6xl md:text-7xl xl:text-8xl">
+            <span className="text-primary">Heat &amp; </span>
+            <span className="text-primary/50">Human </span>
+            <span className="text-primary/50">Health</span>
           </h1>
 
           <p className="text-xl xl:text-2xl text-on-surface-variant font-body leading-relaxed max-w-2xl">
