@@ -9,17 +9,15 @@ import { GridRows } from '@visx/grid';
 import { scaleLinear, scaleBand } from '@visx/scale';
 import { curveMonotoneX } from '@visx/curve';
 import { interpolateRgb } from 'd3-interpolate';
+import { useTooltip } from '@visx/tooltip';
+import { localPoint } from '@visx/event';
 import { globalData, countryData } from '@/lib/data/indicator111attr';
 import { axisColorsForEntities } from '@/lib/dualAxisPalettes';
 import EntityPicker, {
   type EntityCategory,
 } from '@/components/EntityPicker';
-import {
-  useChartHover,
-  Crosshair,
-  TooltipCard,
-  type TooltipPayload,
-} from '@/components/ChartTooltip';
+import { Crosshair, TooltipCard, type TooltipPayload } from '@/components/ChartTooltip';
+import { nearestAlongPolylines } from '@/lib/chartProximity';
 import { useChartTheme } from '@/components/ChartThemeContext';
 import { bandEntityCenterX } from '@/lib/chartGeometry';
 import DualAxisLegend, { DUAL_AXIS } from '@/components/DualAxisLegend';
@@ -149,7 +147,7 @@ export default function Chart111Attr() {
         }}
         right={{
           title: '% Attributable',
-          subtitle: 'Lines — share of observed heatwave days linked to climate change.',
+          subtitle: 'Lines match entity colours; hover near a line or bar to focus one region.',
           color: DUAL_AXIS.rightRose,
         }}
       />
@@ -200,29 +198,6 @@ export default function Chart111Attr() {
               ? Math.max(barGroupWidth / entityCount - 2, 4)
               : barGroupWidth;
 
-            const buildTooltip = (year: number): TooltipPayload => {
-              const rows = selected.flatMap((entity) => {
-                const d = allData.get(entity)?.find((r) => r.Year === year);
-                if (!d) return [];
-                const pctVal = d.Observed > 0 ? (d.Attributable_to_CC / d.Observed) * 100 : 0;
-                const lc = leftColorMap[entity];
-                const rc = rightColorMap[entity];
-                const prefix = entityCount > 1 ? `${entity}: ` : '';
-                return [
-                  { color: lc, label: `${prefix}Observed`, value: fmt(d.Observed), group: entity },
-                  {
-                    color: interpolateRgb('#ffffff', lc)(0.35),
-                    label: `${prefix}Counterfactual`,
-                    value: fmt(d.Counterfactual),
-                    group: entity,
-                  },
-                  { color: lc, label: `${prefix}Attributable`, value: fmt(d.Attributable_to_CC), group: entity },
-                  { color: rc, label: `${prefix}% Attributable`, value: pct(pctVal), group: entity },
-                ];
-              });
-              return { year, rows };
-            };
-
             return (
               <ChartInner
                 width={width}
@@ -240,7 +215,6 @@ export default function Chart111Attr() {
                 throughYear={playback.throughYear}
                 barWidth={barWidth}
                 entityCount={entityCount}
-                buildTooltip={buildTooltip}
                 dark={dark}
               />
             );
@@ -267,7 +241,6 @@ interface ChartInnerProps {
   throughYear: number;
   barWidth: number;
   entityCount: number;
-  buildTooltip: (year: number) => TooltipPayload;
   dark: boolean;
 }
 
@@ -287,10 +260,8 @@ function ChartInner({
   throughYear,
   barWidth,
   entityCount,
-  buildTooltip,
   dark,
 }: ChartInnerProps) {
-  const stableBuildTooltip = useCallback(buildTooltip, [buildTooltip]);
   const gap = 2;
 
   const hoverYears = useMemo(
@@ -298,27 +269,146 @@ function ChartInner({
     [years, throughYear],
   );
 
-  const { tooltipData, tooltipLeft, tooltipTop, tooltipOpen, hoveredYear, handleMouseMove, handleMouseLeave, getXForYear } =
-    useChartHover({
+  const {
+    tooltipData,
+    tooltipLeft,
+    tooltipTop,
+    showTooltip,
+    hideTooltip,
+    tooltipOpen,
+  } = useTooltip<TooltipPayload>();
+
+  const getXForYear = useCallback(
+    (y: number) => (xScale(y) ?? 0) + xScale.bandwidth() / 2,
+    [xScale],
+  );
+
+  const buildPayload = useCallback(
+    (year: number, focusEntity: string | null): TooltipPayload => {
+      const entities =
+        focusEntity && selected.includes(focusEntity) ? [focusEntity] : selected;
+      const rows = entities.flatMap((entity) => {
+        const d = allData.get(entity)?.find((r) => r.Year === year);
+        if (!d) return [];
+        const pctVal = d.Observed > 0 ? (d.Attributable_to_CC / d.Observed) * 100 : 0;
+        const lc = leftColorMap[entity];
+        const rc = rightColorMap[entity];
+        const prefix = entityCount > 1 ? `${entity}: ` : '';
+        return [
+          { color: lc, label: `${prefix}Observed`, value: fmt(d.Observed), group: entity },
+          {
+            color: interpolateRgb('#ffffff', lc)(0.35),
+            label: `${prefix}Counterfactual`,
+            value: fmt(d.Counterfactual),
+            group: entity,
+          },
+          { color: lc, label: `${prefix}Attributable`, value: fmt(d.Attributable_to_CC), group: entity },
+          { color: rc, label: `${prefix}% Attributable`, value: pct(pctVal), group: entity },
+        ];
+      });
+      let hoverFocus: string | undefined;
+      if (focusEntity && entityCount > 1) {
+        hoverFocus = `${focusEntity}`;
+      }
+      return {
+        year,
+        rows,
+        hoverFocus,
+        focusedEntity: focusEntity,
+        focusedSeriesKey: null,
+      };
+    },
+    [allData, selected, entityCount, leftColorMap, rightColorMap],
+  );
+
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent<SVGRectElement>) => {
+      const point = localPoint(event);
+      if (!point) return;
+      const innerX = point.x - margin.left;
+      const innerY = point.y - margin.top;
+      const hy = hoverYears.length > 0 ? hoverYears : years;
+      let nearestYear = hy[0];
+      let minDx = Infinity;
+      for (const y of hy) {
+        const dx = Math.abs(getXForYear(y) - innerX);
+        if (dx < minDx) {
+          minDx = dx;
+          nearestYear = y;
+        }
+      }
+
+      const polylines = selected.map((entity, ei) => {
+        const rows = allData.get(entity) ?? [];
+        const pts = rows
+          .filter((d) => d.Year <= throughYear && d.Observed > 0)
+          .map((d) => ({
+            x: bandEntityCenterX(d.Year, ei, entityCount, xScale, barWidth, gap),
+            y: yRightScale((d.Attributable_to_CC / d.Observed) * 100),
+          }));
+        return { id: entity, pts };
+      });
+      let focus = nearestAlongPolylines(innerX, innerY, polylines, 26);
+
+      if (!focus && entityCount > 1) {
+        for (let ei = 0; ei < entityCount; ei++) {
+          const entity = selected[ei];
+          const d = allData.get(entity)?.find((r) => r.Year === nearestYear);
+          if (!d) continue;
+          const baseX = xScale(nearestYear) ?? 0;
+          const x0 = entityCount > 1 ? baseX + ei * (barWidth + 2) : baseX;
+          const yTop = yScale(d.Counterfactual + d.Attributable_to_CC);
+          if (innerX >= x0 && innerX <= x0 + barWidth && innerY >= yTop && innerY <= innerH) {
+            focus = entity;
+            break;
+          }
+        }
+      }
+
+      showTooltip({
+        tooltipData: buildPayload(nearestYear, focus),
+        tooltipLeft: getXForYear(nearestYear) + margin.left + 10,
+        tooltipTop: point.y,
+      });
+    },
+    [
+      hoverYears,
+      years,
+      getXForYear,
+      selected,
+      allData,
+      throughYear,
+      entityCount,
       xScale,
-      years: hoverYears.length > 0 ? hoverYears : years,
-      margin,
-      buildTooltip: stableBuildTooltip,
-    });
+      barWidth,
+      yRightScale,
+      yScale,
+      innerH,
+      buildPayload,
+      showTooltip,
+    ],
+  );
+
+  const hoveredYear = tooltipData?.year ?? null;
+  const fe = tooltipData?.focusedEntity ?? null;
 
   const dotPositions = useMemo(() => {
     if (hoveredYear == null) return [];
-    return selected.flatMap((entity, ei) => {
+    const entities = fe && selected.includes(fe) ? [fe] : selected;
+    return entities.flatMap((entity) => {
+      const idx = selected.indexOf(entity);
       const d = allData.get(entity)?.find((r) => r.Year === hoveredYear);
       if (!d || d.Observed === 0) return [];
       const pctVal = (d.Attributable_to_CC / d.Observed) * 100;
-      return [{
-        x: bandEntityCenterX(hoveredYear, ei, entityCount, xScale, barWidth, gap),
-        y: yRightScale(pctVal),
-        color: rightColorMap[entity],
-      }];
+      return [
+        {
+          x: bandEntityCenterX(hoveredYear, idx, entityCount, xScale, barWidth, gap),
+          y: yRightScale(pctVal),
+          color: rightColorMap[entity],
+        },
+      ];
     });
-  }, [hoveredYear, selected, allData, yRightScale, rightColorMap, entityCount, xScale, barWidth]);
+  }, [hoveredYear, fe, selected, allData, yRightScale, rightColorMap, entityCount, xScale, barWidth]);
 
   return (
     <>
@@ -350,7 +440,9 @@ function ChartInner({
                     width={barWidth}
                     height={cfH}
                     fill={barColor}
-                    fillOpacity={0.3}
+                    fillOpacity={
+                      fe && entityCount > 1 ? (fe === entity ? 0.42 : 0.1) : 0.3
+                    }
                     rx={2}
                   />
                   <Bar
@@ -359,6 +451,9 @@ function ChartInner({
                     width={barWidth}
                     height={attrH}
                     fill={barColor}
+                    fillOpacity={
+                      fe && entityCount > 1 ? (fe === entity ? 1 : 0.22) : 1
+                    }
                     rx={2}
                   />
                 </g>
@@ -385,7 +480,12 @@ function ChartInner({
                   }
                   y={(d) => yRightScale(d.pct)}
                   stroke={lineColor}
-                  strokeWidth={2.5}
+                  strokeWidth={
+                    fe && entityCount > 1 ? (fe === entity ? 3.2 : 1.5) : 2.5
+                  }
+                  strokeOpacity={
+                    fe && entityCount > 1 ? (fe === entity ? 1 : 0.3) : 1
+                  }
                   curve={curveMonotoneX}
                 />
               </g>
@@ -463,7 +563,7 @@ function ChartInner({
           innerWidth={innerW}
           margin={margin}
           onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
+          onMouseLeave={hideTooltip}
           dotPositions={dotPositions}
         />
       </svg>

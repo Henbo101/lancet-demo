@@ -20,6 +20,12 @@ export interface TooltipPayload {
   year: number;
   rows: TooltipRow[];
   supplementary?: { label: string; value: string }[];
+  /** Shown under the year when the user hovers a specific series/entity (e.g. line focus). */
+  hoverFocus?: string;
+  /** When set, chart should de-emphasise other entities’ geometry. */
+  focusedEntity?: string | null;
+  /** Age/series key for multi-series line charts (e.g. 111 vulnerable). */
+  focusedSeriesKey?: string | null;
 }
 
 /* ────────────────────────────────────────────
@@ -212,9 +218,14 @@ export function TooltipCard({
           : 'bg-white/95 backdrop-blur-md border-slate-200/50 text-slate-900'
       }`}
     >
-      <div className="font-headline text-xs tracking-widest uppercase opacity-60 mb-2">
+      <div className="font-headline text-xs tracking-widest uppercase opacity-60 mb-1">
         {tooltipData.year}
       </div>
+      {tooltipData.hoverFocus && (
+        <div className="text-[11px] font-headline font-semibold text-teal-800 mb-2 leading-snug border-b border-slate-200/80 pb-2 dark:text-teal-100 dark:border-emerald-700/50">
+          {tooltipData.hoverFocus}
+        </div>
+      )}
 
       {[...groups.entries()].map(([group, rows], gi) => (
         <div key={gi}>

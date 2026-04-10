@@ -1,11 +1,12 @@
 import { interpolateRgb } from 'd3-interpolate';
+import { distinctEntityColors } from '@/lib/entityColorPalette';
 
 const TEAL_LO = '#ccfbf1';
 const TEAL_HI = '#0f766e';
 const ROSE_LO = '#fecdd3';
 const ROSE_HI = '#9f1239';
 
-/** Colours for left-Y geometry (bars, stacked areas, left-axis lines) — teal family, one per entity. */
+/** @deprecated Prefer distinctEntityColors for multi-entity charts */
 export function leftEntityColors(count: number): string[] {
   if (count <= 0) return [];
   if (count === 1) return [TEAL_HI];
@@ -14,7 +15,7 @@ export function leftEntityColors(count: number): string[] {
   );
 }
 
-/** Colours for right-Y geometry (lines, rates) — rose family, one per entity. */
+/** @deprecated Prefer distinctEntityColors for multi-entity charts */
 export function rightEntityColors(count: number): string[] {
   if (count <= 0) return [];
   if (count === 1) return [ROSE_HI];
@@ -23,17 +24,16 @@ export function rightEntityColors(count: number): string[] {
   );
 }
 
+/**
+ * One clearly separated colour per entity for both axes (bars + lines track the same region/country).
+ */
 export function axisColorsForEntities(selected: string[]): {
   left: Record<string, string>;
   right: Record<string, string>;
 } {
-  const n = selected.length;
-  const L = leftEntityColors(n);
-  const R = rightEntityColors(n);
-  return {
-    left: Object.fromEntries(selected.map((e, i) => [e, L[i]])),
-    right: Object.fromEntries(selected.map((e, i) => [e, R[i]])),
-  };
+  const cols = distinctEntityColors(selected.length);
+  const left = Object.fromEntries(selected.map((e, i) => [e, cols[i]]));
+  return { left, right: { ...left } };
 }
 
 /** Distinct teal-line shades for multiple series on the left axis only (e.g. age groups). */
