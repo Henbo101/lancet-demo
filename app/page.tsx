@@ -3,18 +3,10 @@ import Chart111Attr from '@/components/indicators/Chart111Attr';
 import Chart111AttrMap from '@/components/indicators/Chart111AttrMap';
 import Chart111Vuln from '@/components/indicators/Chart111Vuln';
 import Chart112 from '@/components/indicators/Chart112';
-import Chart113Pwhl from '@/components/indicators/Chart113Pwhl';
-import Chart113Workers from '@/components/indicators/Chart113Workers';
-import Chart114 from '@/components/indicators/Chart114';
-import Chart115 from '@/components/indicators/Chart115';
 import { indicators } from '@/lib/metadata';
 import { globalData as data111attr } from '@/lib/data/indicator111attr';
 import { globalData as data111vuln } from '@/lib/data/indicator111vuln';
 import { globalData as data112 } from '@/lib/data/indicator112';
-import { globalData as data113pwhl } from '@/lib/data/indicator113pwhl';
-import { globalData as data113workers } from '@/lib/data/indicator113workers';
-import { globalData as data114 } from '@/lib/data/indicator114';
-import { globalData as data115 } from '@/lib/data/indicator115';
 
 export default function Home() {
   return (
@@ -35,7 +27,7 @@ export default function Home() {
           <p className="text-xl xl:text-2xl text-on-surface-variant font-body leading-relaxed max-w-2xl">
             Tracking the surging impact of rising global temperatures on
             vulnerable populations. Our 2026 data reveals unprecedented shifts
-            in mortality and labour capacity.
+            in exposure and physical activity under heat stress.
           </p>
         </div>
       </section>
@@ -69,46 +61,6 @@ export default function Home() {
         variant="splitRight"
       >
         <Chart112 />
-      </IndicatorSection>
-
-      {/* ── 1.1.3 Labour Capacity — dark contrast section ── */}
-      <IndicatorSection
-        meta={indicators[3]}
-        downloadData={[...data113pwhl] as Record<string, unknown>[]}
-        downloadFilename="indicator-1.1.3-labour-capacity.csv"
-        variant="dark"
-      >
-        <Chart113Pwhl />
-      </IndicatorSection>
-
-      {/* ── 1.1.3 Outdoor Workers — compact dashboard ── */}
-      <IndicatorSection
-        meta={indicators[4]}
-        downloadData={[...data113workers] as Record<string, unknown>[]}
-        downloadFilename="indicator-1.1.3-outdoor-workers.csv"
-        variant="dashboard"
-      >
-        <Chart113Workers />
-      </IndicatorSection>
-
-      {/* ── 1.1.4 Sleep Loss — big number focus ── */}
-      <IndicatorSection
-        meta={indicators[5]}
-        downloadData={[...data114] as Record<string, unknown>[]}
-        downloadFilename="indicator-1.1.4-sleep-loss.csv"
-        variant="bignum"
-      >
-        <Chart114 />
-      </IndicatorSection>
-
-      {/* ── 1.1.5 Heat Mortality — conclusion wrap ── */}
-      <IndicatorSection
-        meta={indicators[6]}
-        downloadData={[...data115] as Record<string, unknown>[]}
-        downloadFilename="indicator-1.1.5-heat-mortality.csv"
-        variant="conclusion"
-      >
-        <Chart115 />
       </IndicatorSection>
     </>
   );

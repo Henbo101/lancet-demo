@@ -32,10 +32,6 @@ const sidebarSubItems = [
   { label: '1.1.1 Heatwave Days (Attr.)', href: '#111attr' },
   { label: '1.1.1 Heatwave Exposure (Vuln.)', href: '#111vuln' },
   { label: '1.1.2 Heat & Physical Activity', href: '#112' },
-  { label: '1.1.3 Labour Capacity (PWHL)', href: '#113pwhl' },
-  { label: '1.1.3 Outdoor Workers', href: '#113workers' },
-  { label: '1.1.4 Sleep Loss', href: '#114' },
-  { label: '1.1.5 Heat-Related Mortality', href: '#115' },
 ];
 
 export default function RootLayout({
