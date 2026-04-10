@@ -13,8 +13,6 @@ export default function YearPlaybackBar({ playback, label = 'Year playback', cla
   const {
     minYear,
     maxYear,
-    endYear,
-    setEndYear,
     throughYear,
     setThroughYear,
     playing,
@@ -28,11 +26,6 @@ export default function YearPlaybackBar({ playback, label = 'Year playback', cla
   const handleThroughInput = (v: number) => {
     pause();
     setThroughYear(v);
-  };
-
-  const handleEndInput = (v: number) => {
-    pause();
-    setEndYear(v);
   };
 
   return (
@@ -67,34 +60,19 @@ export default function YearPlaybackBar({ playback, label = 'Year playback', cla
         </button>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:min-w-[200px]">
-        <label className="flex items-center gap-2 text-[11px] font-label text-on-surface-variant">
-          <span className="w-16 shrink-0">Reveal</span>
-          <input
-            type="range"
-            min={minYear}
-            max={maxYear}
-            step={1}
-            value={throughYear}
-            onChange={(e) => handleThroughInput(Number(e.target.value))}
-            className="h-2 min-w-0 flex-1 cursor-pointer accent-primary"
-          />
-          <span className="w-10 tabular-nums text-teal-950">{throughYear}</span>
-        </label>
-        <label className="flex items-center gap-2 text-[11px] font-label text-on-surface-variant">
-          <span className="w-16 shrink-0">Play to</span>
-          <input
-            type="range"
-            min={minYear}
-            max={maxYear}
-            step={1}
-            value={endYear}
-            onChange={(e) => handleEndInput(Number(e.target.value))}
-            className="h-2 min-w-0 flex-1 cursor-pointer accent-teal-600"
-          />
-          <span className="w-10 tabular-nums text-teal-950">{endYear}</span>
-        </label>
-      </div>
+      <label className="flex min-w-0 flex-1 items-center gap-2 text-[11px] font-label text-on-surface-variant sm:min-w-[200px]">
+        <span className="w-16 shrink-0">Reveal</span>
+        <input
+          type="range"
+          min={minYear}
+          max={maxYear}
+          step={1}
+          value={throughYear}
+          onChange={(e) => handleThroughInput(Number(e.target.value))}
+          className="h-2 min-w-0 flex-1 cursor-pointer accent-primary"
+        />
+        <span className="w-10 tabular-nums text-teal-950">{throughYear}</span>
+      </label>
     </div>
   );
 }

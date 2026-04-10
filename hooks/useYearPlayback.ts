@@ -9,9 +9,6 @@ export interface YearPlaybackState {
   minYear: number;
   /** Latest year in the series (inclusive). */
   maxYear: number;
-  /** Animation and display stop at this year (slider). */
-  endYear: number;
-  setEndYear: (y: number) => void;
   /** Data is shown for years ≤ this value. */
   throughYear: number;
   setThroughYear: (y: number) => void;
@@ -33,7 +30,6 @@ export function useYearPlayback(yearsInput: number[]): YearPlaybackState {
   const minYear = sortedYears[0] ?? 0;
   const maxYear = sortedYears[sortedYears.length - 1] ?? 0;
 
-  const [endYear, setEndYearState] = useState(maxYear);
   const [throughYear, setThroughYearState] = useState(maxYear);
   const [playing, setPlaying] = useState(false);
   const sortedRef = useRef(sortedYears);
@@ -43,23 +39,9 @@ export function useYearPlayback(yearsInput: number[]): YearPlaybackState {
     const s = sortedRef.current;
     if (s.length === 0) return;
     const max = s[s.length - 1];
-    setEndYearState(max);
     setThroughYearState(max);
     setPlaying(false);
   }, [yearKey]);
-
-  const setEndYear = useCallback(
-    (y: number) => {
-      const s = sortedRef.current;
-      if (s.length === 0) return;
-      const lo = s[0];
-      const hi = s[s.length - 1];
-      const clamped = Math.max(lo, Math.min(hi, y));
-      setEndYearState(clamped);
-      setThroughYearState((ty) => Math.min(ty, clamped));
-    },
-    [],
-  );
 
   const setThroughYear = useCallback(
     (y: number) => {
@@ -76,7 +58,6 @@ export function useYearPlayback(yearsInput: number[]): YearPlaybackState {
     const s = sortedRef.current;
     const max = s[s.length - 1] ?? 0;
     setThroughYearState(max);
-    setEndYearState(max);
     setPlaying(false);
   }, []);
 
@@ -96,7 +77,7 @@ export function useYearPlayback(yearsInput: number[]): YearPlaybackState {
       setPlaying(false);
       return;
     }
-    const cap = Math.min(endYear, s[s.length - 1]);
+    const cap = s[s.length - 1];
     const ty = throughYear;
     if (ty >= cap) {
       setPlaying(false);
@@ -110,13 +91,11 @@ export function useYearPlayback(yearsInput: number[]): YearPlaybackState {
     }
     const id = window.setTimeout(() => setThroughYearState(next), STEP_MS);
     return () => window.clearTimeout(id);
-  }, [playing, throughYear, endYear]);
+  }, [playing, throughYear]);
 
   return {
     minYear,
     maxYear,
-    endYear,
-    setEndYear,
     throughYear,
     setThroughYear,
     playing,

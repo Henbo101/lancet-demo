@@ -62,7 +62,6 @@ export default function IndicatorSection({
   showNumberBadge = true,
   showSectionTitle = true,
 }: Props) {
-  const [open, setOpen] = useState(false);
   const [activeView, setActiveView] = useState<ViewMode>('trend');
 
   const viewTabs = useMemo(() => {
@@ -171,48 +170,76 @@ export default function IndicatorSection({
     </div>
   );
 
-  const technicalDetails = (
-    <div className={`rounded-[2rem] p-6 ${isDark ? 'bg-white/5' : 'bg-surface-container-low'}`}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center justify-between w-full text-left"
-      >
-        <span className={`text-[10px] font-headline uppercase tracking-widest ${isDark ? 'text-white/50' : 'text-on-surface-variant'}`}>
-          Technical Details
-        </span>
-        <span className={`material-symbols-outlined text-sm ${isDark ? 'text-white/50' : 'text-on-surface-variant'}`}>
-          {open ? 'expand_less' : 'expand_more'}
-        </span>
-      </button>
+  const metaLabel = `text-[10px] font-headline font-semibold uppercase tracking-[0.18em] ${
+    isDark ? 'text-white/40' : 'text-on-surface-variant/80'
+  }`;
+  const metaBody = `text-[11px] sm:text-xs leading-relaxed ${isDark ? 'text-white/65' : 'text-on-surface-variant'}`;
+  const metaBodyProse = `${metaBody} ${isDark ? 'text-white/70' : 'text-on-surface'}`;
 
-      {open && (
-        <div className={`mt-4 space-y-4 text-xs leading-relaxed ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>
-          <div><strong className={isDark ? 'text-white' : 'text-on-surface'}>Authors</strong><br />{meta.authors}</div>
-          <div><strong className={isDark ? 'text-white' : 'text-on-surface'}>Description</strong><br />{meta.description}</div>
-          <div><strong className={isDark ? 'text-white' : 'text-on-surface'}>Caveats</strong><br /><em>{meta.caveats}</em></div>
+  const technicalDetails = (
+    <div
+      className={`rounded-xl border px-4 py-4 sm:px-5 sm:py-5 ${
+        isDark
+          ? 'border-white/10 bg-white/[0.04] shadow-none'
+          : 'border-outline-variant/25 bg-white/70 shadow-sm shadow-slate-200/20'
+      }`}
+    >
+      <div
+        className={`flex flex-col gap-3 border-b pb-3 sm:flex-row sm:items-center sm:justify-between ${
+          isDark ? 'border-white/10' : 'border-outline-variant/15'
+        }`}
+      >
+        <h3 className={`text-[10px] font-headline font-bold uppercase tracking-[0.2em] ${isDark ? 'text-white/45' : 'text-on-surface-variant'}`}>
+          Methodology &amp; data
+        </h3>
+        <button
+          type="button"
+          onClick={handleDownload}
+          className={`inline-flex w-full shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-[10px] font-bold uppercase tracking-wide transition-colors sm:w-auto ${
+            isDark
+              ? 'border-white/15 text-white/85 hover:bg-white/10'
+              : 'border-outline-variant/40 text-teal-900 hover:bg-teal-50/80'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[16px]">download</span>
+          Data (CSV)
+        </button>
+      </div>
+
+      <div className="mt-4 grid gap-6 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-0">
+        <div className="space-y-4">
           <div>
-            <strong className={isDark ? 'text-white' : 'text-on-surface'}>Data Sources</strong>
-            <ul className="mt-1 space-y-0.5">
+            <p className={`${metaLabel} mb-1.5`}>Description</p>
+            <p className={metaBodyProse}>{meta.description}</p>
+          </div>
+          <div>
+            <p className={`${metaLabel} mb-1.5`}>Caveats</p>
+            <p className={`${metaBody} italic`}>{meta.caveats}</p>
+          </div>
+        </div>
+
+        <div className={`space-y-4 lg:border-l lg:pl-8 ${isDark ? 'border-white/10' : 'border-outline-variant/20'}`}>
+          <div>
+            <p className={`${metaLabel} mb-1.5`}>Authors</p>
+            <p className={metaBodyProse}>{meta.authors}</p>
+          </div>
+          <div>
+            <p className={`${metaLabel} mb-1.5`}>Data sources</p>
+            <ul className={`${metaBody} list-none space-y-1.5 pl-0`}>
               {meta.dataSources.map((s) => (
-                <li key={s}>• {s}</li>
+                <li key={s} className="flex gap-2">
+                  <span className={`mt-1.5 h-1 w-1 shrink-0 rounded-full ${isDark ? 'bg-white/35' : 'bg-primary/40'}`} />
+                  <span>{s}</span>
+                </li>
               ))}
             </ul>
           </div>
-          <div><strong className={isDark ? 'text-white' : 'text-on-surface'}>Citation</strong><br />{meta.citation}</div>
+          <div className={`border-t pt-4 ${isDark ? 'border-white/10' : 'border-outline-variant/20'}`}>
+            <p className={`${metaLabel} mb-1.5`}>Citation</p>
+            <p className={`${metaBody} text-[10px] sm:text-[11px] leading-snug`}>{meta.citation}</p>
+          </div>
         </div>
-      )}
-
-      <button
-        onClick={handleDownload}
-        className={`mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-bold border w-full justify-center transition-colors ${
-          isDark
-            ? 'bg-white/10 border-white/20 text-white hover:bg-white/20'
-            : 'bg-white border-outline-variant/30 hover:bg-teal-50'
-        }`}
-      >
-        <span className="material-symbols-outlined text-sm">download</span>
-        <span>DOWNLOAD CSV</span>
-      </button>
+      </div>
     </div>
   );
 
