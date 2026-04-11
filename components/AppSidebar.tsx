@@ -43,7 +43,7 @@ export default function AppSidebar() {
         <div className="text-2xl font-bold text-teal-950 font-headline tracking-tight">INDICATORS</div>
         <div className="flex items-center gap-1.5 mt-1">
           <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          <span className="text-[13px] tracking-widest text-slate-400 font-headline">2026 LIVE ARCHIVE</span>
+          <span className="text-[13px] tracking-widest text-slate-400 font-headline">Live Demo</span>
         </div>
       </div>
 
