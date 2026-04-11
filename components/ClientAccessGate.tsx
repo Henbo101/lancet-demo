@@ -8,8 +8,8 @@ const STORAGE_KEY = 'lc_gate_ok';
 /** Set on Vercel: same value users type to enter (visible in client bundle — casual access only). */
 const GATE_PASSWORD = process.env.NEXT_PUBLIC_GATE_PASSWORD ?? '';
 
-/** Shown under the logo, e.g. "Data Explorer". */
-const PROJECT_TITLE = process.env.NEXT_PUBLIC_GATE_PROJECT_TITLE ?? 'Data Explorer';
+/** Shown under the logo; override with NEXT_PUBLIC_GATE_PROJECT_TITLE. */
+const PROJECT_TITLE = process.env.NEXT_PUBLIC_GATE_PROJECT_TITLE ?? 'Data Platform Demo';
 
 export default function ClientAccessGate({ children }: { children: React.ReactNode }) {
   const hasGate = GATE_PASSWORD.length > 0;
